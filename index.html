@@ -7,101 +7,167 @@
     <style>
         /* 仙尊暗黑风色彩体系 */
         :root {
-            --bg-color: #0b0b0e;      /* 深邃夜色 */
-            --text-color: #e2e8f0;    /* 冷白 */
-            --accent-color: #991b1b;  /* 血月红 */
-            --glow-color: #06b6d4;    /* 幽火青 */
+            --bg-color: #050508;      /* 极暗深邃夜色 */
+            --text-color: #f1f5f9;    /* 冷白 */
+            --accent-color: #b91c1c;  /* 血月红 */
+            --glow-color: #22d3ee;    /* 幽火青 */
         }
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+        * {
+            box-sizing: border-box;
+        }
+
+        body, html {
             margin: 0;
             padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: "Quicksand", "PingFang SC", "Microsoft YaHei", sans-serif;
             overflow: hidden;
         }
 
-        /* 核心展示卡片 */
+        /* 背景大图/动图容器 */
+        #bg-image {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* 替换下面的链接为你自己喜欢的仙尊图片/动图URL。目前用纯黑和暗色叠加缓冲 */
+            background: linear-gradient(to bottom, rgba(5,5,8,0.85), rgba(5,5,8,0.95)), 
+                        url('https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=1000') no-repeat center center;
+            background-size: cover;
+            z-index: 1;
+        }
+
+        /* 3D粒子Canvas容器 */
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            pointer-events: auto; /* 允许鼠标在全屏互动 */
+        }
+
+        /* 核心展示卡片：UI透明水玻璃质感 */
         .container {
-            max-width: 600px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 650px;
             width: 85%;
             text-align: center;
-            padding: 50px 30px;
-            border: 1px solid #1e293b;
-            background: linear-gradient(145deg, #111827, #030712);
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(153, 27, 27, 0.15);
-            border-radius: 12px;
-            position: relative;
+            padding: 60px 40px;
+            z-index: 3; /* 在粒子和背景之上 */
+            
+            /* 水玻璃/毛玻璃核心：透明度+高斯模糊+亮色微边框 */
+            background: rgba(10, 11, 15, 0.45); 
+            -webkit-backdrop-filter: blur(16px) saturate(120%);
+            backdrop-filter: blur(16px) saturate(120%);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-radius: 16px;
+            
+            /* 暗黑阴影，带有一丝丝血红幽光 */
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8), 
+                        0 0 40px rgba(185, 28, 28, 0.08);
+            transition: all 0.5s ease;
+        }
+
+        /* 鼠标悬停卡片时的微妙亮化，增强水玻璃感 */
+        .container:hover {
+            border: 1px solid rgba(34, 211, 238, 0.15);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8), 
+                        0 0 50px rgba(34, 211, 238, 0.08);
         }
 
         /* 标题：睥睨天下 */
         h1 {
-            font-size: 2.4rem;
-            letter-spacing: 6px;
-            margin-bottom: 10px;
-            background: linear-gradient(to right, var(--text-color), var(--accent-color));
+            font-size: 2.2rem;
+            letter-spacing: 8px;
+            margin: 0 0 12px 0;
+            font-weight: 400;
+            background: linear-gradient(to right, var(--text-color) 40%, var(--accent-color));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(0,0,0,0.5);
         }
 
         .subtitle {
-            font-size: 0.9rem;
-            color: #64748b;
-            letter-spacing: 2px;
-            margin-bottom: 40px;
-        }
-
-        /* 语录轮播区（打字机动态效果） */
-        .quote-box {
-            font-size: 1.25rem;
-            line-height: 1.8;
-            height: 70px; /* 固定高度防止页面抖动 */
-            color: #cbd5e1;
-            margin: 40px 0;
-            font-weight: 300;
-        }
-
-        .cursor {
-            display: inline-block;
-            width: 2px;
-            background-color: var(--accent-color);
-            animation: blink 0.7s infinite;
-            margin-left: 3px;
-        }
-
-        /* 底部修行信息 */
-        .footer {
             font-size: 0.85rem;
-            color: #4b5563;
-            margin-top: 60px;
-            border-top: 1px solid #1e293b;
-            padding-top: 20px;
+            color: #64748b;
+            letter-spacing: 3px;
+            margin-bottom: 40px;
+            text-transform: uppercase;
+        }
+
+        /* 语录展示区：淡入淡出页面设计效果 */
+        .quote-box {
+            font-size: 1.35rem;
+            line-height: 2;
+            height: 90px; /* 固定高度锁死面板，防止文字长短不一导致内容抖动 */
+            color: #e2e8f0;
+            margin: 30px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 1000px;
+        }
+
+        #quote {
+            opacity: 0;
+            filter: blur(10px);
+            transform: translateY(15px);
+            transition: opacity 1.2s cubic-bezier(0.25, 1, 0.5, 1), 
+                        filter 1.2s cubic-bezier(0.25, 1, 0.5, 1), 
+                        transform 1.2s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        /* 触发淡入显现的状态 */
+        #quote.show {
+            opacity: 1;
+            filter: blur(0px);
+            transform: translateY(0px);
+        }
+
+        /* 底部信息 */
+        .footer {
+            font-size: 0.8rem;
+            color: #475569;
+            margin-top: 50px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding-top: 25px;
+            letter-spacing: 1px;
         }
 
         .footer a {
             color: var(--glow-color);
             text-decoration: none;
-            font-weight: bold;
+            font-weight: 500;
+            transition: color 0.3s ease;
         }
-
-        @keyframes blink {
-            50% { opacity: 0; }
+        
+        .footer a:hover {
+            color: var(--accent-color);
         }
     </style>
 </head>
 <body>
 
+    <div id="bg-image"></div>
+
+    <div id="canvas-container"></div>
+
     <div class="container">
         <h1>古月方源 · 个人真传</h1>
-        <div class="subtitle">天若阻我，我便踏碎这天</div>
+        <div class="subtitle">天若阻我 我便踏碎这天</div>
         
         <div class="quote-box">
-            <span id="quote"></span><span class="cursor">&nbsp;</span>
+            <span id="quote"></span>
         </div>
 
         <div class="footer">
@@ -110,45 +176,160 @@
         </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
     <script>
-        // 仙尊经典语录库
+        /* ===================================================
+           1. 语录库与淡入淡出（Fade In/Out）逻辑
+           =================================================== */
         const quotes = [
             "难，才显真本事。易，要我何用？",
             "行于黑暗，留心光明。身在泥潭，心向巍峨。",
             "今朝暂且展羽翼，明载翱翔九重天！",
             "宿命……呵呵。千般谋划，万种牺牲，皆在此举！",
-            "路在脚下，走便是了。"
+            "路在脚下，走便是了。",
+            "即便头破血流，即便是凡夫俗子的无力挣扎，我也要争一争。"
         ];
 
         let quoteIndex = 0;
-        let charIndex = 0;
         const quoteElement = document.getElementById("quote");
 
-        function type() {
-            if (charIndex < quotes[quoteIndex].length) {
-                quoteElement.textContent += quotes[quoteIndex].charAt(charIndex);
-                charIndex++;
-                setTimeout(type, 150); // 打字速度（毫秒）
-            } else {
-                setTimeout(erase, 3000); // 完整显示后停留3秒
-            }
-        }
-
-        function erase() {
-            if (charIndex > 0) {
-                quoteElement.textContent = quotes[quoteIndex].substring(0, charIndex - 1);
-                charIndex--;
-                setTimeout(erase, 50); // 删除速度
-            } else {
+        function changeQuote() {
+            // 先淡出、变模糊
+            quoteElement.classList.remove("show");
+            
+            setTimeout(() => {
+                // 替换下一句文字
+                quoteElement.textContent = quotes[quoteIndex];
+                // 重新加上show类，触发CSS的过渡动效（淡入、解冻模糊）
+                quoteElement.classList.add("show");
+                
                 quoteIndex = (quoteIndex + 1) % quotes.length;
-                setTimeout(type, 500); // 切换下一句的延迟
-            }
+            }, 1200); // 这里的延迟和CSS的淡出动画相匹配
         }
 
-        // 页面加载完成后开始运行
+        // 初始化语录流
         document.addEventListener("DOMContentLoaded", () => {
-            setTimeout(type, 1000);
+            changeQuote();
+            setInterval(changeQuote, 5500); // 每5.5秒轮换一次
         });
+
+
+        /* ===================================================
+           2. 3D 互动粒子系统 (Three.js 核心逻辑)
+           =================================================== */
+        let scene, camera, renderer, particleSystem;
+        let particles = 1200; // 优化后的粒子数量，保证顺滑
+        let mouseX = 0, mouseY = 0;
+        
+        let windowHalfX = window.innerWidth / 2;
+        let windowHalfY = window.innerHeight / 2;
+
+        function initParticles() {
+            const container = document.getElementById('canvas-container');
+
+            // 创建3D场景
+            scene = new THREE.Scene();
+
+            // 创建相机 (视角, 宽高比, 最近渲染, 最远渲染)
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 2000);
+            camera.position.z = 500;
+
+            // 初始化粒子几何体
+            const geometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(particles * 3);
+            const colors = new Float32Array(particles * 3);
+
+            const colorGlow = new THREE.Color("#06b6d4"); // 幽火青粒子
+            const colorAccent = new THREE.Color("#991b1b"); // 血月红粒子
+
+            for (let i = 0; i < particles * 3; i += 3) {
+                // 在三维空间内随机散布粒子坐标
+                positions[i] = (Math.random() - 0.5) * 1200;     // X
+                positions[i + 1] = (Math.random() - 0.5) * 1200; // Y
+                positions[i + 2] = (Math.random() - 0.5) * 1200; // Z
+
+                // 随机混合青色和红色的粒子，增强仙尊的黑暗魔道质感
+                const mixedColor = Math.random() > 0.75 ? colorAccent : colorGlow;
+                colors[i] = mixedColor.r;
+                colors[i + 1] = mixedColor.g;
+                colors[i + 2] = mixedColor.b;
+            }
+
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+            // 制作发光圆点粒子材质
+            const canvas = document.createElement('canvas');
+            canvas.width = 16;
+            canvas.height = 16;
+            const ctx = canvas.getContext('2d');
+            const gradient = ctx.createRadialGradient(8, 8, 0, 8, 8, 8);
+            gradient.addColorStop(0, 'rgba(255,255,255,1)');
+            gradient.addColorStop(1, 'rgba(255,255,255,0)');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 16, 16);
+            
+            const texture = new THREE.CanvasTexture(canvas);
+
+            const material = new THREE.PointsMaterial({
+                size: 4,
+                map: texture,
+                vertexColors: true,
+                blending: THREE.AdditiveBlending, // 叠加发光模式
+                depthWrite: false,
+                transparent: true,
+                opacity: 0.8
+            });
+
+            // 生成系统并加入场景
+            particleSystem = new THREE.Points(geometry, material);
+            scene.add(particleSystem);
+
+            // 渲染器配置
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            container.appendChild(renderer.domElement);
+
+            // 监听鼠标移动和窗口缩放
+            document.addEventListener('mousemove', onDocumentMouseMove);
+            window.addEventListener('resize', onWindowResize);
+        }
+
+        function onDocumentMouseMove(event) {
+            // 计算鼠标相对于屏幕中心的偏移距离
+            mouseX = event.clientX - windowHalfX;
+            mouseY = event.clientY - windowHalfY;
+        }
+
+        function onWindowResize() {
+            windowHalfX = window.innerWidth / 2;
+            windowHalfY = window.innerHeight / 2;
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // 循环逐帧动画
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // 让粒子群微弱地自主旋转
+            particleSystem.rotation.x += 0.0008;
+            particleSystem.rotation.y += 0.0005;
+
+            // 核心交互：根据鼠标坐标，缓慢地让相机跟随偏移，从而产生深度的3D空间粒子拉扯感
+            camera.position.x += (mouseX * 0.45 - camera.position.x) * 0.05;
+            camera.position.y += (-mouseY * 0.45 - camera.position.y) * 0.05;
+            camera.lookAt(scene.position);
+
+            renderer.render(scene, camera);
+        }
+
+        // 启动3D引擎
+        initParticles();
+        animate();
     </script>
 </body>
 </html>
