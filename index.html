@@ -368,7 +368,8 @@ body { cursor: crosshair; }
 
   <!-- 人物剪影（未来替换为立绘图片） -->
   <div id="character">
-    <svg viewBox="0 0 400 700" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg viewBox="0 0 400 700" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <image href="https://raw.githubusercontent.com/Laidecai/Hello_World/main/assets/main_gif/daaixianzun.gif" x="0" y="0" width="400" height="700" />
       <!-- 长袍身形 -->
       <ellipse cx="200" cy="130" rx="52" ry="60" fill="rgba(241,245,249,0.9)"/>
       <!-- 头发 -->
@@ -513,11 +514,11 @@ body { cursor: crosshair; }
 ════════════════════════════════ -->
 <footer class="act" id="act-footer">
   <div class="footer-inner">
-    <p>大一修行者 · 宿命既定，唯我逆天</p>
+    <p>修行者 · 宿命既定，唯我逆天</p>
     <p style="margin-top:12px;">
       <a href="https://github.com/Laidecai" target="_blank">GitHub</a>
       &nbsp;·&nbsp;
-      <a href="#">联系方式</a>
+      <a href="mailto:599494220@qq.com" target="_blank">599494220@qq.com</a>
     </p>
     <p style="margin-top:24px;font-size:0.62rem;color:rgba(71,85,105,0.4);">
       © 古月方源 · Laidecai.github.io
@@ -559,7 +560,7 @@ body { cursor: crosshair; }
   const texGold = makeSprite('rgba(212,160,68,1)');
 
   /* ── 银河主体（蓝色流动粒子）── */
-  const N_GALAXY = 2200;
+  const N_GALAXY = 2500;
   const geoGalaxy = new THREE.BufferGeometry();
   const posG = new Float32Array(N_GALAXY * 3);
   for (let i = 0; i < N_GALAXY * 3; i += 3) {
@@ -579,7 +580,7 @@ body { cursor: crosshair; }
   scene.add(galaxy);
 
   /* ── 宿命节点（红色闪烁粒子）── */
-  const N_RED = 80;
+  const N_RED = 90;
   const geoRed = new THREE.BufferGeometry();
   const posR = new Float32Array(N_RED * 3);
   for (let i = 0; i < N_RED * 3; i += 3) {
