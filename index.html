@@ -1,335 +1,881 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>大爱仙尊 | 唯我独尊</title>
-    <style>
-        /* 仙尊暗黑风色彩体系 */
-        :root {
-            --bg-color: #050508;      /* 极暗深邃夜色 */
-            --text-color: #f1f5f9;    /* 冷白 */
-            --accent-color: #b91c1c;  /* 血月红 */
-            --glow-color: #22d3ee;    /* 幽火青 */
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>古月方源 · 大爱仙尊</title>
+<style>
+:root {
+  --blood: #b91c1c;
+  --glow: #22d3ee;
+  --gold: #d4a044;
+  --void: #050508;
+  --mist: rgba(34,211,238,0.06);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
 
-        * {
-            box-sizing: border-box;
-        }
+body {
+  background: var(--void);
+  color: #f1f5f9;
+  font-family: "PingFang SC","Noto Serif SC","Microsoft YaHei",serif;
+  overflow-x: hidden;
+}
 
-        body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            font-family: "Quicksand", "PingFang SC", "Microsoft YaHei", sans-serif;
-            overflow: hidden;
-        }
+/* ── 固定层 ── */
+#canvas3d {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+#trail-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+#click-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
 
-        /* 背景大图/动图容器 */
-        #bg-image {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            /* 替换下面的链接为你自己喜欢的仙尊图片/动图URL。目前用纯黑和暗色叠加缓冲 */
-            background: linear-gradient(to bottom, rgba(5,5,8,0.85), rgba(5,5,8,0.95)), 
-                        url('https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=1000') no-repeat center center;
-            background-size: cover;
-            z-index: 1;
-        }
+/* ── 幕次容器 ── */
+.act {
+  position: relative;
+  z-index: 10;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 80px 24px;
+  overflow: hidden;
+}
 
-        /* 3D粒子Canvas容器 */
-        #canvas-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 2;
-            pointer-events: auto; /* 允许鼠标在全屏互动 */
-        }
+/* 幕间分割 */
+.act-divider {
+  position: relative;
+  z-index: 10;
+  height: 1px;
+  margin: 0 8vw;
+  background: linear-gradient(to right, transparent, rgba(34,211,238,0.2), transparent);
+}
 
-        /* 核心展示卡片：UI透明水玻璃质感 */
-        .container {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            max-width: 650px;
-            width: 85%;
-            text-align: center;
-            padding: 60px 40px;
-            z-index: 3; /* 在粒子和背景之上 */
-            
-            /* 水玻璃/毛玻璃核心：透明度+高斯模糊+亮色微边框 */
-            background: rgba(10, 11, 15, 0.45); 
-            -webkit-backdrop-filter: blur(16px) saturate(120%);
-            backdrop-filter: blur(16px) saturate(120%);
-            border: 1px solid rgba(255, 255, 255, 0.07);
-            border-radius: 16px;
-            
-            /* 暗黑阴影，带有一丝丝血红幽光 */
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8), 
-                        0 0 40px rgba(185, 28, 28, 0.08);
-            transition: all 0.5s ease;
-        }
+/* ─── 第一幕：英雄区 ─── */
+#act-hero {
+  min-height: 100vh;
+  justify-content: flex-end;
+  padding-bottom: 14vh;
+}
 
-        /* 鼠标悬停卡片时的微妙亮化，增强水玻璃感 */
-        .container:hover {
-            border: 1px solid rgba(34, 211, 238, 0.15);
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8), 
-                        0 0 50px rgba(34, 211, 238, 0.08);
-        }
+/* 仙尊人物剪影 */
+#character {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(460px, 72vw);
+  opacity: 0.18;
+  filter: blur(0.5px);
+  pointer-events: none;
+  z-index: 5;
+}
+#character svg {
+  width: 100%;
+  height: auto;
+}
 
-        /* 标题：睥睨天下 */
-        h1 {
-            font-size: 2.2rem;
-            letter-spacing: 8px;
-            margin: 0 0 12px 0;
-            font-weight: 400;
-            background: linear-gradient(to right, var(--text-color) 40%, var(--accent-color));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 20px rgba(0,0,0,0.5);
-        }
+/* 能量法阵 */
+.rune-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 6;
+}
+.rune-ring svg {
+  animation: ring-spin 28s linear infinite;
+  opacity: 0.12;
+}
+.rune-ring-2 svg {
+  animation: ring-spin-rev 40s linear infinite;
+  opacity: 0.07;
+}
+@keyframes ring-spin { to { transform: rotate(360deg); } }
+@keyframes ring-spin-rev { to { transform: rotate(-360deg); } }
 
-        .subtitle {
-            font-size: 0.85rem;
-            color: #64748b;
-            letter-spacing: 3px;
-            margin-bottom: 40px;
-            text-transform: uppercase;
-        }
+/* 能量呼吸晕 */
+.breath-orb {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 340px; height: 340px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(34,211,238,0.055) 0%, transparent 70%);
+  animation: breathe 5s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 4;
+}
+@keyframes breathe {
+  0%,100% { transform: translate(-50%,-50%) scale(1); opacity: 0.6; }
+  50%      { transform: translate(-50%,-50%) scale(1.18); opacity: 1; }
+}
 
-        /* 语录展示区：淡入淡出页面设计效果 */
-        .quote-box {
-            font-size: 1.35rem;
-            line-height: 2;
-            height: 90px; /* 固定高度锁死面板，防止文字长短不一导致内容抖动 */
-            color: #e2e8f0;
-            margin: 30px 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            perspective: 1000px;
-        }
+/* 主标题 */
+.hero-title {
+  position: relative;
+  z-index: 8;
+  font-size: clamp(3.2rem, 9vw, 7.5rem);
+  font-weight: 300;
+  letter-spacing: 0.22em;
+  line-height: 1;
+  text-align: center;
+  background: linear-gradient(160deg, #f1f5f9 20%, #22d3ee 60%, #b91c1c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 30px rgba(34,211,238,0.15));
+  opacity: 0;
+  transform: translateY(30px);
+  animation: fade-rise 2s 0.5s cubic-bezier(.22,1,.36,1) forwards;
+}
 
-        #quote {
-            opacity: 0;
-            filter: blur(10px);
-            transform: translateY(15px);
-            transition: opacity 1.2s cubic-bezier(0.25, 1, 0.5, 1), 
-                        filter 1.2s cubic-bezier(0.25, 1, 0.5, 1), 
-                        transform 1.2s cubic-bezier(0.25, 1, 0.5, 1);
-        }
+/* 副标题逐字 */
+.hero-sub {
+  position: relative;
+  z-index: 8;
+  margin-top: 28px;
+  font-size: clamp(0.9rem, 2vw, 1.2rem);
+  letter-spacing: 0.4em;
+  color: rgba(100,116,139,0.9);
+  text-align: center;
+  overflow: hidden;
+}
+.hero-sub span {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(20px);
+}
 
-        /* 触发淡入显现的状态 */
-        #quote.show {
-            opacity: 1;
-            filter: blur(0px);
-            transform: translateY(0px);
-        }
+/* 滚动提示 */
+.scroll-hint {
+  position: absolute;
+  bottom: 36px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  opacity: 0;
+  animation: fade-rise 2s 3s forwards;
+}
+.scroll-hint .line {
+  width: 1px;
+  height: 44px;
+  background: linear-gradient(to bottom, transparent, rgba(34,211,238,0.5));
+  animation: scroll-line 1.8s ease-in-out infinite;
+}
+.scroll-hint p {
+  font-size: 0.65rem;
+  letter-spacing: 0.35em;
+  color: rgba(100,116,139,0.6);
+  text-transform: uppercase;
+}
+@keyframes scroll-line {
+  0%,100% { opacity: 0.3; transform: scaleY(1); }
+  50%      { opacity: 1;   transform: scaleY(1.2); }
+}
 
-        /* 底部信息 */
-        .footer {
-            font-size: 0.8rem;
-            color: #475569;
-            margin-top: 50px;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-            padding-top: 25px;
-            letter-spacing: 1px;
-        }
+/* ─── 幕次通用 ─── */
+.act-eyebrow {
+  font-size: 0.7rem;
+  letter-spacing: 0.5em;
+  color: rgba(34,211,238,0.5);
+  text-transform: uppercase;
+  margin-bottom: 22px;
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 1s, transform 1s;
+}
+.act-heading {
+  font-size: clamp(2rem, 5vw, 3.8rem);
+  font-weight: 300;
+  letter-spacing: 0.18em;
+  text-align: center;
+  line-height: 1.2;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 1.2s 0.1s, transform 1.2s 0.1s;
+}
+.act-heading em {
+  font-style: normal;
+  color: var(--blood);
+}
+.act-body {
+  max-width: 560px;
+  text-align: center;
+  font-size: clamp(0.88rem, 1.5vw, 1.05rem);
+  line-height: 2.1;
+  color: rgba(148,163,184,0.85);
+  margin-top: 28px;
+  letter-spacing: 0.06em;
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 1.2s 0.25s, transform 1.2s 0.25s;
+}
+.act-quote {
+  margin-top: 36px;
+  padding: 18px 28px;
+  border-left: 1px solid rgba(34,211,238,0.25);
+  font-size: 0.92rem;
+  color: rgba(34,211,238,0.65);
+  letter-spacing: 0.12em;
+  line-height: 2;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 1.2s 0.38s, transform 1.2s 0.38s;
+}
 
-        .footer a {
-            color: var(--glow-color);
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s ease;
-        }
-        
-        .footer a:hover {
-            color: var(--accent-color);
-        }
-    </style>
+/* 可见状态（IntersectionObserver 触发） */
+.in-view .act-eyebrow,
+.in-view .act-heading,
+.in-view .act-body,
+.in-view .act-quote {
+  opacity: 1;
+  transform: none;
+}
+
+/* 幕次背景色叠层 */
+#act-youth  { background: radial-gradient(ellipse at 30% 60%, rgba(15,60,30,0.22) 0%, transparent 65%); }
+#act-rise   { background: radial-gradient(ellipse at 70% 40%, rgba(120,10,10,0.2) 0%, transparent 65%); }
+#act-cosmos { background: radial-gradient(ellipse at 50% 50%, rgba(5,30,70,0.25) 0%, transparent 65%); }
+#act-self   { background: radial-gradient(ellipse at 40% 60%, rgba(60,30,5,0.18) 0%, transparent 65%); }
+
+/* 现实身份卡——仅第四幕使用，无边框样式 */
+.identity-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 2px;
+  max-width: 640px;
+  width: 100%;
+  margin-top: 48px;
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 1.2s 0.5s, transform 1.2s 0.5s;
+}
+.in-view .identity-grid { opacity: 1; transform: none; }
+.id-item {
+  padding: 22px 18px;
+  text-align: center;
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+.id-item .dao { font-size: 0.7rem; letter-spacing: 0.4em; color: rgba(34,211,238,0.4); margin-bottom: 8px; }
+.id-item .name { font-size: 1rem; letter-spacing: 0.15em; color: rgba(241,245,249,0.88); }
+
+/* 页脚 */
+#act-footer {
+  min-height: auto;
+  padding: 60px 24px 80px;
+  border-top: 1px solid rgba(255,255,255,0.04);
+}
+.footer-inner {
+  text-align: center;
+  font-size: 0.72rem;
+  color: rgba(71,85,105,0.7);
+  letter-spacing: 0.25em;
+  line-height: 2.5;
+}
+.footer-inner a {
+  color: rgba(34,211,238,0.5);
+  text-decoration: none;
+  transition: color 0.3s;
+}
+.footer-inner a:hover { color: var(--blood); }
+
+/* 音频控件（隐藏，JS 控制） */
+#ambient-audio { display: none; }
+
+/* 淡入动画 */
+@keyframes fade-rise {
+  to { opacity: 1; transform: none; }
+}
+
+/* 粒子拖尾悬停感知（纯视觉辅助） */
+body { cursor: crosshair; }
+
+/* 响应式 */
+@media (max-width: 600px) {
+  .hero-title { letter-spacing: 0.14em; }
+  .identity-grid { grid-template-columns: 1fr 1fr; }
+}
+</style>
 </head>
 <body>
 
-    <div id="bg-image"></div>
+<!-- 固定粒子层 -->
+<canvas id="canvas3d"></canvas>
+<!-- 鼠标拖尾层 -->
+<canvas id="trail-canvas"></canvas>
+<!-- 点击法阵层 -->
+<canvas id="click-canvas"></canvas>
 
-    <div id="canvas-container"></div>
+<!-- 背景音效 -->
+<audio id="ambient-audio" loop>
+  <!-- 未来替换为古琴/风声音源 -->
+</audio>
 
-    <div class="container">
-        <h1>古月方源 · 个人真传</h1>
-        <div class="subtitle">天若阻我 我便踏碎这天</div>
-        
-        <div class="quote-box">
-            <span id="quote"></span>
-        </div>
+<!-- ═══════════════════════════════
+     第一幕：英雄降世
+════════════════════════════════ -->
+<section class="act" id="act-hero">
 
-        <div class="footer">
-            <p>「早岁已知世事艰，仍许飞雪满青山。」</p>
-            <p>炼制人：<a href="#">大一修行者</a> | 宿命既定，唯我逆天</p>
-        </div>
+  <!-- 呼吸光晕 -->
+  <div class="breath-orb"></div>
+
+  <!-- 外圈法阵 -->
+  <div class="rune-ring" style="width:520px;height:520px;margin-left:-260px;margin-top:-260px;">
+    <svg viewBox="0 0 520 520" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="260" cy="260" r="255" stroke="#22d3ee" stroke-width="0.6" stroke-dasharray="4 18"/>
+      <circle cx="260" cy="260" r="220" stroke="#22d3ee" stroke-width="0.3" stroke-dasharray="2 30"/>
+      <polygon points="260,10 495,390 25,390" fill="none" stroke="rgba(34,211,238,0.4)" stroke-width="0.5"/>
+      <polygon points="260,510 25,130 495,130" fill="none" stroke="rgba(185,28,28,0.3)" stroke-width="0.5"/>
+      <circle cx="260" cy="10"  r="3" fill="rgba(34,211,238,0.5)"/>
+      <circle cx="495" cy="390" r="3" fill="rgba(34,211,238,0.5)"/>
+      <circle cx="25"  cy="390" r="3" fill="rgba(34,211,238,0.5)"/>
+      <circle cx="260" cy="510" r="3" fill="rgba(185,28,28,0.5)"/>
+      <circle cx="25"  cy="130" r="3" fill="rgba(185,28,28,0.5)"/>
+      <circle cx="495" cy="130" r="3" fill="rgba(185,28,28,0.5)"/>
+    </svg>
+  </div>
+
+  <!-- 内圈法阵 -->
+  <div class="rune-ring rune-ring-2" style="width:340px;height:340px;margin-left:-170px;margin-top:-170px;">
+    <svg viewBox="0 0 340 340" fill="none">
+      <circle cx="170" cy="170" r="165" stroke="#d4a044" stroke-width="0.4" stroke-dasharray="1 12"/>
+      <circle cx="170" cy="170" r="140" stroke="#d4a044" stroke-width="0.3" stroke-dasharray="3 20"/>
+      <line x1="170" y1="5"  x2="170" y2="335" stroke="rgba(212,160,68,0.15)" stroke-width="0.4"/>
+      <line x1="5"   y1="170" x2="335" y2="170" stroke="rgba(212,160,68,0.15)" stroke-width="0.4"/>
+      <line x1="52"  y1="52"  x2="288" y2="288" stroke="rgba(212,160,68,0.1)" stroke-width="0.4"/>
+      <line x1="288" y1="52"  x2="52"  y2="288" stroke="rgba(212,160,68,0.1)" stroke-width="0.4"/>
+    </svg>
+  </div>
+
+  <!-- 人物剪影（未来替换为立绘图片） -->
+  <div id="character">
+    <svg viewBox="0 0 400 700" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- 长袍身形 -->
+      <ellipse cx="200" cy="130" rx="52" ry="60" fill="rgba(241,245,249,0.9)"/>
+      <!-- 头发 -->
+      <path d="M148 110 Q130 80 155 60 Q200 40 245 60 Q270 80 252 110" fill="rgba(30,30,40,0.95)"/>
+      <path d="M148 110 Q120 130 130 180 L148 175Z" fill="rgba(30,30,40,0.95)"/>
+      <path d="M252 110 Q280 130 270 180 L252 175Z" fill="rgba(30,30,40,0.95)"/>
+      <!-- 长袍主体 -->
+      <path d="M148 180 Q130 200 110 300 Q90 420 80 560 Q80 620 120 650 L200 660 L280 650 Q320 620 320 560 Q310 420 290 300 Q270 200 252 180Z" 
+            fill="rgba(10,12,20,0.92)" stroke="rgba(34,211,238,0.2)" stroke-width="1"/>
+      <!-- 衣领 -->
+      <path d="M170 180 Q200 220 230 180" fill="none" stroke="rgba(212,160,68,0.4)" stroke-width="1.5"/>
+      <!-- 腰带 -->
+      <path d="M115 310 Q200 325 285 310" stroke="rgba(212,160,68,0.35)" stroke-width="1.2" fill="none"/>
+      <!-- 袖子 -->
+      <path d="M148 200 Q80 240 40 300 Q20 330 50 340 Q90 320 130 290 L148 250Z"
+            fill="rgba(10,12,20,0.85)" stroke="rgba(34,211,238,0.15)" stroke-width="0.8"/>
+      <path d="M252 200 Q320 240 360 300 Q380 330 350 340 Q310 320 270 290 L252 250Z"
+            fill="rgba(10,12,20,0.85)" stroke="rgba(34,211,238,0.15)" stroke-width="0.8"/>
+      <!-- 左手印诀 -->
+      <ellipse cx="48" cy="342" rx="14" ry="10" fill="rgba(241,245,249,0.7)"/>
+      <!-- 右手印诀 -->
+      <ellipse cx="352" cy="342" rx="14" ry="10" fill="rgba(241,245,249,0.7)"/>
+      <!-- 衣纹细节 -->
+      <path d="M160 250 Q180 350 170 460 Q168 520 170 580" stroke="rgba(34,211,238,0.1)" stroke-width="0.6" fill="none"/>
+      <path d="M240 250 Q220 350 230 460 Q232 520 230 580" stroke="rgba(34,211,238,0.1)" stroke-width="0.6" fill="none"/>
+      <!-- 气息流线 -->
+      <path d="M48 342 Q0 300 30 250 Q60 200 100 230" stroke="rgba(34,211,238,0.25)" stroke-width="0.8" fill="none" stroke-dasharray="3 6"/>
+      <path d="M352 342 Q400 300 370 250 Q340 200 300 230" stroke="rgba(34,211,238,0.25)" stroke-width="0.8" fill="none" stroke-dasharray="3 6"/>
+    </svg>
+  </div>
+
+  <!-- 主标题 -->
+  <h1 class="hero-title">古月方源</h1>
+
+  <!-- 副标题逐字 -->
+  <p class="hero-sub" id="hero-sub-text">
+    <span>天</span><span>若</span><span>阻</span><span>我</span>
+    <span style="margin:0 0.3em">·</span>
+    <span>我</span><span>便</span><span>踏</span><span>碎</span><span>这</span><span>天</span>
+  </p>
+
+  <!-- 滚动指示 -->
+  <div class="scroll-hint">
+    <div class="line"></div>
+    <p>展开传记</p>
+  </div>
+</section>
+
+<div class="act-divider"></div>
+
+<!-- ═══════════════════════════════
+     第二幕：少年时期
+════════════════════════════════ -->
+<section class="act" id="act-youth">
+  <p class="act-eyebrow">第一幕 · 少年</p>
+  <h2 class="act-heading">早岁已知<em>世事艰</em></h2>
+  <p class="act-body">
+    生于山河之间，长于书卷与风雨之中。<br>
+    彼时不知天地之大，只知眼前之路须一步一步丈量。<br>
+    世间诸多艰难，皆为往后破境之基。
+  </p>
+  <blockquote class="act-quote">
+    「早岁已知世事艰，仍许飞雪满青山。」
+  </blockquote>
+</section>
+
+<div class="act-divider"></div>
+
+<!-- ═══════════════════════════════
+     第三幕：逆天崛起
+════════════════════════════════ -->
+<section class="act" id="act-rise">
+  <p class="act-eyebrow">第二幕 · 崛起</p>
+  <h2 class="act-heading">命若<em>天定</em><br>我便破天</h2>
+  <p class="act-body">
+    难，才显真本事。<br>
+    易，要我何用？<br>
+    行于黑暗，留心光明。<br>
+    身在泥潭，心向巍峨。
+  </p>
+  <blockquote class="act-quote">
+    「宿命……呵呵。千般谋划，万种牺牲，皆在此举！」
+  </blockquote>
+</section>
+
+<div class="act-divider"></div>
+
+<!-- ═══════════════════════════════
+     第四幕：大爱仙尊
+════════════════════════════════ -->
+<section class="act" id="act-cosmos">
+  <p class="act-eyebrow">第三幕 · 仙尊</p>
+  <h2 class="act-heading">诸天<em>万界</em><br>唯我独尊</h2>
+  <p class="act-body">
+    今朝暂且展羽翼，明载翱翔九重天。<br>
+    路在脚下，走便是了。<br>
+    即便头破血流，即便是凡夫俗子的无力挣扎，<br>
+    我也要争一争。
+  </p>
+  <blockquote class="act-quote">
+    「路在脚下，走便是了。」
+  </blockquote>
+</section>
+
+<div class="act-divider"></div>
+
+<!-- ═══════════════════════════════
+     第五幕：现实身份
+════════════════════════════════ -->
+<section class="act" id="act-self">
+  <p class="act-eyebrow">第四幕 · 现世修行</p>
+  <h2 class="act-heading">入世<em>修道</em><br>以技证道</h2>
+  <p class="act-body">
+    入北体圣地，修体育工程大道。<br>
+    习 AI 神术，探运动科技玄机。<br>
+    以一身所学，铸运动科技之器。<br>
+    创业为剑，破开未来之门。
+  </p>
+
+  <div class="identity-grid">
+    <div class="id-item">
+      <div class="dao">修行圣地</div>
+      <div class="name">北京体育大学</div>
     </div>
+    <div class="id-item">
+      <div class="dao">修炼大道</div>
+      <div class="name">体育工程</div>
+    </div>
+    <div class="id-item">
+      <div class="dao">神术修习</div>
+      <div class="name">人工智能</div>
+    </div>
+    <div class="id-item">
+      <div class="dao">铸器方向</div>
+      <div class="name">运动科技</div>
+    </div>
+  </div>
+</section>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<!-- ═══════════════════════════════
+     页脚
+════════════════════════════════ -->
+<footer class="act" id="act-footer">
+  <div class="footer-inner">
+    <p>大一修行者 · 宿命既定，唯我逆天</p>
+    <p style="margin-top:12px;">
+      <a href="https://github.com/Laidecai" target="_blank">GitHub</a>
+      &nbsp;·&nbsp;
+      <a href="#">联系方式</a>
+    </p>
+    <p style="margin-top:24px;font-size:0.62rem;color:rgba(71,85,105,0.4);">
+      © 古月方源 · Laidecai.github.io
+    </p>
+  </div>
+</footer>
 
-    <script>
-        /* ===================================================
-           1. 语录库与淡入淡出（Fade In/Out）逻辑
-           =================================================== */
-        const quotes = [
-            "难，才显真本事。易，要我何用？",
-            "行于黑暗，留心光明。身在泥潭，心向巍峨。",
-            "今朝暂且展羽翼，明载翱翔九重天！",
-            "宿命……呵呵。千般谋划，万种牺牲，皆在此举！",
-            "路在脚下，走便是了。",
-            "即便头破血流，即便是凡夫俗子的无力挣扎，我也要争一争。"
-        ];
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
-        let quoteIndex = 0;
-        const quoteElement = document.getElementById("quote");
+<script>
+/* ═══════════════════════════════
+   Three.js 粒子宇宙
+════════════════════════════════ */
+(function () {
+  const canvas = document.getElementById('canvas3d');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
 
-        function changeQuote() {
-            // 先淡出、变模糊
-            quoteElement.classList.remove("show");
-            
-            setTimeout(() => {
-                // 替换下一句文字
-                quoteElement.textContent = quotes[quoteIndex];
-                // 重新加上show类，触发CSS的过渡动效（淡入、解冻模糊）
-                quoteElement.classList.add("show");
-                
-                quoteIndex = (quoteIndex + 1) % quotes.length;
-            }, 1200); // 这里的延迟和CSS的淡出动画相匹配
-        }
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 3000);
+  camera.position.z = 600;
 
-        // 初始化语录流
-        document.addEventListener("DOMContentLoaded", () => {
-            changeQuote();
-            setInterval(changeQuote, 5500); // 每5.5秒轮换一次
-        });
+  /* ── 粒子纹理：柔和发光圆 ── */
+  function makeSprite(color) {
+    const c = document.createElement('canvas');
+    c.width = c.height = 32;
+    const ctx = c.getContext('2d');
+    const g = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+    g.addColorStop(0, color);
+    g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, 32, 32);
+    return new THREE.CanvasTexture(c);
+  }
+
+  const texBlue = makeSprite('rgba(34,211,238,1)');
+  const texRed  = makeSprite('rgba(185,28,28,1)');
+  const texGold = makeSprite('rgba(212,160,68,1)');
+
+  /* ── 银河主体（蓝色流动粒子）── */
+  const N_GALAXY = 2200;
+  const geoGalaxy = new THREE.BufferGeometry();
+  const posG = new Float32Array(N_GALAXY * 3);
+  for (let i = 0; i < N_GALAXY * 3; i += 3) {
+    const angle = Math.random() * Math.PI * 2;
+    const radius = Math.pow(Math.random(), 0.5) * 800;
+    const spread = (Math.random() - 0.5) * 120;
+    posG[i]   = Math.cos(angle) * radius + (Math.random() - 0.5) * 80;
+    posG[i+1] = spread;
+    posG[i+2] = Math.sin(angle) * radius * 0.4 + (Math.random() - 0.5) * 80;
+  }
+  geoGalaxy.setAttribute('position', new THREE.BufferAttribute(posG, 3));
+  const matGalaxy = new THREE.PointsMaterial({
+    size: 2.8, map: texBlue, blending: THREE.AdditiveBlending,
+    depthWrite: false, transparent: true, opacity: 0.55
+  });
+  const galaxy = new THREE.Points(geoGalaxy, matGalaxy);
+  scene.add(galaxy);
+
+  /* ── 宿命节点（红色闪烁粒子）── */
+  const N_RED = 80;
+  const geoRed = new THREE.BufferGeometry();
+  const posR = new Float32Array(N_RED * 3);
+  for (let i = 0; i < N_RED * 3; i += 3) {
+    posR[i]   = (Math.random() - 0.5) * 1400;
+    posR[i+1] = (Math.random() - 0.5) * 800;
+    posR[i+2] = (Math.random() - 0.5) * 600;
+  }
+  geoRed.setAttribute('position', new THREE.BufferAttribute(posR, 3));
+  const matRed = new THREE.PointsMaterial({
+    size: 4.5, map: texRed, blending: THREE.AdditiveBlending,
+    depthWrite: false, transparent: true, opacity: 0.7
+  });
+  const redNodes = new THREE.Points(geoRed, matRed);
+  scene.add(redNodes);
+
+  /* ── 流星系统 ── */
+  const meteors = [];
+  function spawnMeteor() {
+    const geo = new THREE.BufferGeometry();
+    const len = 14;
+    const pos = new Float32Array(len * 3);
+    const startX = (Math.random() - 0.5) * 1200;
+    const startY = 300 + Math.random() * 200;
+    const dz = 0;
+    for (let i = 0; i < len; i++) {
+      pos[i*3]   = startX - i * 18;
+      pos[i*3+1] = startY - i * 12;
+      pos[i*3+2] = dz;
+    }
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    const mat = new THREE.LineBasicMaterial({
+      color: 0x22d3ee, transparent: true, opacity: 0.0,
+      blending: THREE.AdditiveBlending
+    });
+    const line = new THREE.Line(geo, mat);
+    scene.add(line);
+    meteors.push({ line, vx: -3.5, vy: -2.2, life: 0, maxLife: 55 });
+  }
+
+  /* ── 鼠标偏移 ── */
+  let mx = 0, my = 0;
+  document.addEventListener('mousemove', e => {
+    mx = (e.clientX / window.innerWidth  - 0.5) * 2;
+    my = (e.clientY / window.innerHeight - 0.5) * 2;
+  });
+
+  /* ── 呼吸时钟 ── */
+  let t = 0;
+  let meteorTimer = 0;
+
+  function animate() {
+    requestAnimationFrame(animate);
+    t += 0.008;
+
+    galaxy.rotation.y += 0.0003;
+    galaxy.rotation.x  = Math.sin(t * 0.3) * 0.04;
+
+    redNodes.material.opacity = 0.4 + Math.sin(t * 1.8) * 0.3;
+    redNodes.rotation.y -= 0.0006;
+
+    /* 粒子呼吸缩放 */
+    matGalaxy.size = 2.8 + Math.sin(t) * 0.5;
+
+    /* 相机随鼠标 */
+    camera.position.x += (mx * 140 - camera.position.x) * 0.04;
+    camera.position.y += (-my * 80  - camera.position.y) * 0.04;
+    camera.lookAt(scene.position);
+
+    /* 流星 */
+    meteorTimer++;
+    if (meteorTimer > 220 + Math.random() * 300) {
+      spawnMeteor();
+      meteorTimer = 0;
+    }
+    for (let i = meteors.length - 1; i >= 0; i--) {
+      const m = meteors[i];
+      m.life++;
+      const pos = m.line.geometry.attributes.position.array;
+      for (let j = 0; j < pos.length; j += 3) {
+        pos[j]   += m.vx;
+        pos[j+1] += m.vy;
+      }
+      m.line.geometry.attributes.position.needsUpdate = true;
+      const p = m.life / m.maxLife;
+      m.line.material.opacity = p < 0.3 ? p / 0.3 * 0.8 : (1 - (p - 0.3) / 0.7) * 0.8;
+      if (m.life >= m.maxLife) {
+        scene.remove(m.line);
+        meteors.splice(i, 1);
+      }
+    }
+
+    renderer.render(scene, camera);
+  }
+  animate();
+
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+})();
 
 
-        /* ===================================================
-           2. 3D 互动粒子系统 (Three.js 核心逻辑)
-           =================================================== */
-        let scene, camera, renderer, particleSystem;
-        let particles = 1200; // 优化后的粒子数量，保证顺滑
-        let mouseX = 0, mouseY = 0;
-        
-        let windowHalfX = window.innerWidth / 2;
-        let windowHalfY = window.innerHeight / 2;
+/* ═══════════════════════════════
+   鼠标拖尾粒子
+════════════════════════════════ */
+(function () {
+  const canvas = document.getElementById('trail-canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
 
-        function initParticles() {
-            const container = document.getElementById('canvas-container');
+  const trails = [];
+  let mouse = { x: -999, y: -999 };
 
-            // 创建3D场景
-            scene = new THREE.Scene();
+  document.addEventListener('mousemove', e => {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+    for (let i = 0; i < 3; i++) {
+      trails.push({
+        x: mouse.x + (Math.random() - 0.5) * 10,
+        y: mouse.y + (Math.random() - 0.5) * 10,
+        vx: (Math.random() - 0.5) * 1.2,
+        vy: (Math.random() - 0.5) * 1.2 - 0.5,
+        life: 1,
+        size: Math.random() * 2.5 + 0.5,
+        hue: Math.random() > 0.8 ? 'rgba(185,28,28,' : 'rgba(34,211,238,'
+      });
+    }
+  });
 
-            // 创建相机 (视角, 宽高比, 最近渲染, 最远渲染)
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 2000);
-            camera.position.z = 500;
+  function loop() {
+    requestAnimationFrame(loop);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (let i = trails.length - 1; i >= 0; i--) {
+      const p = trails[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      p.life -= 0.032;
+      if (p.life <= 0) { trails.splice(i, 1); continue; }
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+      ctx.fillStyle = p.hue + (p.life * 0.6) + ')';
+      ctx.fill();
+    }
+  }
+  loop();
 
-            // 初始化粒子几何体
-            const geometry = new THREE.BufferGeometry();
-            const positions = new Float32Array(particles * 3);
-            const colors = new Float32Array(particles * 3);
+  window.addEventListener('resize', () => {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+  });
+})();
 
-            const colorGlow = new THREE.Color("#06b6d4"); // 幽火青粒子
-            const colorAccent = new THREE.Color("#991b1b"); // 血月红粒子
 
-            for (let i = 0; i < particles * 3; i += 3) {
-                // 在三维空间内随机散布粒子坐标
-                positions[i] = (Math.random() - 0.5) * 1200;     // X
-                positions[i + 1] = (Math.random() - 0.5) * 1200; // Y
-                positions[i + 2] = (Math.random() - 0.5) * 1200; // Z
+/* ═══════════════════════════════
+   点击法阵扩散
+════════════════════════════════ */
+(function () {
+  const canvas = document.getElementById('click-canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
 
-                // 随机混合青色和红色的粒子，增强仙尊的黑暗魔道质感
-                const mixedColor = Math.random() > 0.75 ? colorAccent : colorGlow;
-                colors[i] = mixedColor.r;
-                colors[i + 1] = mixedColor.g;
-                colors[i + 2] = mixedColor.b;
-            }
+  const arrays = [];
 
-            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  document.addEventListener('click', e => {
+    arrays.push({ x: e.clientX, y: e.clientY, r: 0, life: 1 });
+    arrays.push({ x: e.clientX, y: e.clientY, r: 0, life: 1, delay: 8 });
+  });
 
-            // 制作发光圆点粒子材质
-            const canvas = document.createElement('canvas');
-            canvas.width = 16;
-            canvas.height = 16;
-            const ctx = canvas.getContext('2d');
-            const gradient = ctx.createRadialGradient(8, 8, 0, 8, 8, 8);
-            gradient.addColorStop(0, 'rgba(255,255,255,1)');
-            gradient.addColorStop(1, 'rgba(255,255,255,0)');
-            ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, 16, 16);
-            
-            const texture = new THREE.CanvasTexture(canvas);
+  function drawArray(x, y, r, alpha) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(r * 0.01);
+    ctx.globalAlpha = alpha;
+    ctx.strokeStyle = '#22d3ee';
+    ctx.lineWidth = 0.7;
 
-            const material = new THREE.PointsMaterial({
-                size: 4,
-                map: texture,
-                vertexColors: true,
-                blending: THREE.AdditiveBlending, // 叠加发光模式
-                depthWrite: false,
-                transparent: true,
-                opacity: 0.8
-            });
+    /* 六边形法阵 */
+    ctx.beginPath();
+    for (let i = 0; i < 6; i++) {
+      const a = (i / 6) * Math.PI * 2 - Math.PI / 6;
+      const px = Math.cos(a) * r;
+      const py = Math.sin(a) * r;
+      i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+    }
+    ctx.closePath();
+    ctx.stroke();
 
-            // 生成系统并加入场景
-            particleSystem = new THREE.Points(geometry, material);
-            scene.add(particleSystem);
+    /* 内圆 */
+    ctx.beginPath();
+    ctx.arc(0, 0, r * 0.6, 0, Math.PI * 2);
+    ctx.stroke();
 
-            // 渲染器配置
-            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-            renderer.setPixelRatio(window.devicePixelRatio);
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            container.appendChild(renderer.domElement);
+    /* 外圆 */
+    ctx.beginPath();
+    ctx.arc(0, 0, r * 1.15, 0, Math.PI * 2);
+    ctx.stroke();
 
-            // 监听鼠标移动和窗口缩放
-            document.addEventListener('mousemove', onDocumentMouseMove);
-            window.addEventListener('resize', onWindowResize);
-        }
+    /* 放射线 */
+    for (let i = 0; i < 6; i++) {
+      const a = (i / 6) * Math.PI * 2;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(Math.cos(a) * r * 0.55, Math.sin(a) * r * 0.55);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
 
-        function onDocumentMouseMove(event) {
-            // 计算鼠标相对于屏幕中心的偏移距离
-            mouseX = event.clientX - windowHalfX;
-            mouseY = event.clientY - windowHalfY;
-        }
+  function loop() {
+    requestAnimationFrame(loop);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (let i = arrays.length - 1; i >= 0; i--) {
+      const a = arrays[i];
+      if (a.delay && a.delay > 0) { a.delay--; continue; }
+      a.r += 4.5;
+      a.life -= 0.028;
+      if (a.life <= 0) { arrays.splice(i, 1); continue; }
+      drawArray(a.x, a.y, a.r, a.life * 0.7);
+    }
+  }
+  loop();
 
-        function onWindowResize() {
-            windowHalfX = window.innerWidth / 2;
-            windowHalfY = window.innerHeight / 2;
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        }
+  window.addEventListener('resize', () => {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+  });
+})();
 
-        // 循环逐帧动画
-        function animate() {
-            requestAnimationFrame(animate);
 
-            // 让粒子群微弱地自主旋转
-            particleSystem.rotation.x += 0.0008;
-            particleSystem.rotation.y += 0.0005;
+/* ═══════════════════════════════
+   副标题逐字浮现
+════════════════════════════════ */
+(function () {
+  const spans = document.querySelectorAll('#hero-sub-text span');
+  spans.forEach((s, i) => {
+    s.style.transition = `opacity 0.6s ${1.8 + i * 0.12}s, transform 0.6s ${1.8 + i * 0.12}s`;
+  });
+  setTimeout(() => {
+    spans.forEach(s => {
+      s.style.opacity = '1';
+      s.style.transform = 'none';
+    });
+  }, 100);
+})();
 
-            // 核心交互：根据鼠标坐标，缓慢地让相机跟随偏移，从而产生深度的3D空间粒子拉扯感
-            camera.position.x += (mouseX * 0.45 - camera.position.x) * 0.05;
-            camera.position.y += (-mouseY * 0.45 - camera.position.y) * 0.05;
-            camera.lookAt(scene.position);
 
-            renderer.render(scene, camera);
-        }
+/* ═══════════════════════════════
+   滚动进场（IntersectionObserver）
+════════════════════════════════ */
+(function () {
+  const acts = document.querySelectorAll('.act:not(#act-hero)');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('in-view');
+        obs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.18 });
+  acts.forEach(a => obs.observe(a));
+})();
 
-        // 启动3D引擎
-        initParticles();
-        animate();
-    </script>
+
+/* ═══════════════════════════════
+   Hover 文字能量波纹
+════════════════════════════════ */
+(function () {
+  document.querySelectorAll('.act-heading, .hero-title').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      el.style.filter = 'drop-shadow(0 0 18px rgba(34,211,238,0.4))';
+      el.style.transition = 'filter 0.4s';
+    });
+    el.addEventListener('mouseleave', () => {
+      el.style.filter = '';
+    });
+  });
+})();
+
+
+/* ═══════════════════════════════
+   音效（首次点击激活）
+════════════════════════════════ */
+(function () {
+  const audio = document.getElementById('ambient-audio');
+  let played = false;
+  document.addEventListener('click', () => {
+    if (!played && audio.src) {
+      audio.volume = 0.18;
+      audio.play().catch(() => {});
+      played = true;
+    }
+  }, { once: false });
+})();
+</script>
 </body>
 </html>
