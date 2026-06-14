@@ -4,25 +4,47 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>古月方源 · 大爱仙尊</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+QingKe+HuangYou&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=Long+Cang&display=swap" rel="stylesheet">
 <style>
 :root {
-  --blood: #b91c1c;
-  --glow: #22d3ee;
-  --gold: #d4a044;
-  --void: #050508;
-  --mist: rgba(34,211,238,0.06);
+  --blood: #dc2626;
+  --blood-dark: #991b1b;
+  --red-glow: #ef4444;
+  --white: #f8fafc;
+  --gray: #64748b;
+  --void: #05050e;
+  --void-light: #0c0c1a;
+  --cosmic-blue: #3b82f6;
+  --cosmic-cyan: #22d3ee;
+  --cosmic-purple: #8b5cf6;
+  --cosmic-pink: #ec4899;
+  --scan-color: rgba(59,130,246,0.4);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
 
 body {
   background: var(--void);
-  color: #f1f5f9;
-  font-family: "PingFang SC","Noto Serif SC","Microsoft YaHei",serif;
+  color: var(--white);
+  font-family: "Zhi Mang Xing","Ma Shan Zheng","ZCOOL QingKe HuangYou",sans-serif;
   overflow-x: hidden;
+  cursor: crosshair;
 }
 
-/* ── 固定层 ── */
+/* 淡入淡出全局过渡 */
+.fade-section {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 1s cubic-bezier(.22,1,.36,1), transform 1s cubic-bezier(.22,1,.36,1);
+}
+.fade-section.visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* ── 固定画布层 ── */
 #canvas3d {
   position: fixed;
   inset: 0;
@@ -41,6 +63,12 @@ body {
   z-index: 3;
   pointer-events: none;
 }
+#scan-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+}
 
 /* ── 幕次容器 ── */
 .act {
@@ -55,13 +83,14 @@ body {
   overflow: hidden;
 }
 
-/* 幕间分割 */
+/* 幕间分割——银河星带风格 */
 .act-divider {
   position: relative;
   z-index: 10;
   height: 1px;
   margin: 0 8vw;
-  background: linear-gradient(to right, transparent, rgba(34,211,238,0.2), transparent);
+  background: linear-gradient(to right, transparent, rgba(59,130,246,0.2), rgba(139,92,246,0.3), rgba(59,130,246,0.2), transparent);
+  box-shadow: 0 0 20px rgba(59,130,246,0.08);
 }
 
 /* ─── 第一幕：英雄区 ─── */
@@ -71,94 +100,248 @@ body {
   padding-bottom: 14vh;
 }
 
-/* 仙尊人物剪影 */
+/* ═══ 封面人物 —— 宇宙银河融合视觉 ═══ */
 #character {
   position: absolute;
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: min(460px, 72vw);
-  opacity: 0.18;
-  filter: blur(0.5px);
+  width: min(500px, 82vw);
   pointer-events: none;
   z-index: 5;
+  animation: char-float 6s ease-in-out infinite;
 }
-#character svg {
+#character img {
   width: 100%;
   height: auto;
+  display: block;
+  position: relative;
+  z-index: 2;
+  mix-blend-mode: screen;
+  opacity: 0.5;
+  filter:
+    contrast(1.15)
+    brightness(0.95)
+    saturate(1.05)
+    drop-shadow(-1.5px 0 0 rgba(59,130,246,0.12))
+    drop-shadow(1.5px 0 0 rgba(236,72,153,0.08))
+    drop-shadow(0 0 30px rgba(59,130,246,0.05));
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 22%, black 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, black 22%, black 100%);
+  animation: char-visual-pulse 4s ease-in-out infinite;
 }
-
-/* 能量法阵 */
-.rune-ring {
+/* 融合渐变层 — 从宇宙过渡到人物 */
+#character::before {
+  content: '';
   position: absolute;
-  top: 50%;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(to bottom,
+    rgba(5,5,14,0.8) 0%,
+    rgba(5,5,14,0.3) 18%,
+    transparent 30%,
+    transparent 80%,
+    rgba(5,5,14,0.4) 100%);
+  pointer-events: none;
+}
+/* 仙尊光环（头顶星云光晕） */
+#character::after {
+  content: '';
+  position: absolute;
+  top: -12%;
   left: 50%;
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-  z-index: 6;
-}
-.rune-ring svg {
-  animation: ring-spin 28s linear infinite;
-  opacity: 0.12;
-}
-.rune-ring-2 svg {
-  animation: ring-spin-rev 40s linear infinite;
-  opacity: 0.07;
-}
-@keyframes ring-spin { to { transform: rotate(360deg); } }
-@keyframes ring-spin-rev { to { transform: rotate(-360deg); } }
-
-/* 能量呼吸晕 */
-.breath-orb {
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  width: 340px; height: 340px;
+  transform: translateX(-50%);
+  width: 80%;
+  padding-bottom: 80%;
+  z-index: 0;
   border-radius: 50%;
-  background: radial-gradient(ellipse, rgba(34,211,238,0.055) 0%, transparent 70%);
-  animation: breathe 5s ease-in-out infinite;
+  background: radial-gradient(ellipse, rgba(59,130,246,0.06) 0%, rgba(139,92,246,0.03) 25%, transparent 60%);
+  animation: halo-pulse 6s ease-in-out infinite;
   pointer-events: none;
-  z-index: 4;
 }
-@keyframes breathe {
-  0%,100% { transform: translate(-50%,-50%) scale(1); opacity: 0.6; }
-  50%      { transform: translate(-50%,-50%) scale(1.18); opacity: 1; }
+@keyframes char-visual-pulse {
+  0%,100% {
+    filter:
+      contrast(1.15) brightness(0.95) saturate(1.05)
+      drop-shadow(-1.5px 0 0 rgba(59,130,246,0.12))
+      drop-shadow(1.5px 0 0 rgba(236,72,153,0.08))
+      drop-shadow(0 0 30px rgba(59,130,246,0.05));
+    opacity: 0.5;
+  }
+  50% {
+    filter:
+      contrast(1.3) brightness(1.05) saturate(1.1)
+      drop-shadow(-2px 0 0 rgba(59,130,246,0.18))
+      drop-shadow(2px 0 0 rgba(236,72,153,0.12))
+      drop-shadow(0 0 40px rgba(59,130,246,0.08));
+    opacity: 0.58;
+  }
+}
+@keyframes char-float {
+  0%,100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(-6px); }
+}
+@keyframes halo-pulse {
+  0%,100% { transform: translateX(-50%) scale(1); opacity: 0.4; }
+  50% { transform: translateX(-50%) scale(1.1); opacity: 0.8; }
 }
 
-/* 主标题 */
+/* 人物故障覆盖层 canvas */
+.char-glitch-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.2;
+}
+
+/* 标题扫描框——只聚焦"古月方源"四个字 */
+.scan-frame {
+  position: absolute;
+  z-index: 7;
+  pointer-events: none;
+  opacity: 0;
+  animation: scan-frame-reveal 1s 1.5s forwards;
+  border: 1px solid rgba(59,130,246,0.15);
+  box-shadow: 0 0 20px rgba(59,130,246,0.05), inset 0 0 20px rgba(59,130,246,0.02);
+  transition: all 0.8s cubic-bezier(.22,1,.36,1);
+}
+.scan-frame.active {
+  border-color: rgba(59,130,246,0.3);
+  box-shadow: 0 0 30px rgba(59,130,246,0.1), inset 0 0 30px rgba(59,130,246,0.05);
+}
+.scan-frame .scan-beam {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(to right, transparent, rgba(59,130,246,0.6), rgba(139,92,246,0.6), transparent);
+  box-shadow: 0 0 15px rgba(59,130,246,0.3), 0 0 40px rgba(139,92,246,0.1);
+  animation: title-scan 2.5s ease-in-out infinite;
+}
+.scan-frame .corner {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-color: rgba(59,130,246,0.5);
+  border-style: solid;
+  border-width: 0;
+  transition: border-color 0.5s;
+}
+.scan-frame.active .corner {
+  border-color: rgba(59,130,246,0.7);
+}
+.scan-frame .corner.tl { top: -1px; left: -1px; border-top-width: 2px; border-left-width: 2px; }
+.scan-frame .corner.tr { top: -1px; right: -1px; border-top-width: 2px; border-right-width: 2px; }
+.scan-frame .corner.bl { bottom: -1px; left: -1px; border-bottom-width: 2px; border-left-width: 2px; }
+.scan-frame .corner.br { bottom: -1px; right: -1px; border-bottom-width: 2px; border-right-width: 2px; }
+@keyframes title-scan {
+  0%,100% { top: 0; opacity: 0.2; }
+  20% { opacity: 1; }
+  50% { top: 100%; opacity: 0.8; }
+  80% { opacity: 1; }
+}
+@keyframes scan-frame-reveal {
+  to { opacity: 1; }
+}
+
+/* 主标题——3D 银河字体 + 丰富动效 */
 .hero-title {
   position: relative;
-  z-index: 8;
-  font-size: clamp(3.2rem, 9vw, 7.5rem);
-  font-weight: 300;
-  letter-spacing: 0.22em;
+  z-index: 9;
+  font-size: clamp(3.6rem, 10vw, 8rem);
+  font-family: "ZCOOL QingKe HuangYou","Zhi Mang Xing",sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.25em;
   line-height: 1;
   text-align: center;
-  background: linear-gradient(160deg, #f1f5f9 20%, #22d3ee 60%, #b91c1c 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  filter: drop-shadow(0 0 30px rgba(34,211,238,0.15));
+  color: var(--white);
+  text-shadow:
+    0 0 10px rgba(255,255,255,0.4),
+    0 0 30px rgba(59,130,246,0.2),
+    0 0 60px rgba(139,92,246,0.1),
+    2px 2px 0 #000,
+    4px 4px 0 rgba(59,130,246,0.5),
+    6px 6px 0 #000,
+    8px 8px 0 rgba(59,130,246,0.3),
+    10px 10px 0 #000,
+    12px 12px 8px rgba(0,0,0,0.6);
   opacity: 0;
-  transform: translateY(30px);
-  animation: fade-rise 2s 0.5s cubic-bezier(.22,1,.36,1) forwards;
+  transform: translateY(30px) perspective(600px) rotateX(8deg);
+  animation: hero-3d-rise 2s 0.5s cubic-bezier(.22,1,.36,1) forwards;
+  transition: text-shadow 0.4s, letter-spacing 0.4s, transform 0.3s;
+}
+.hero-title:hover {
+  text-shadow:
+    0 0 20px rgba(255,255,255,0.6),
+    0 0 40px rgba(59,130,246,0.3),
+    0 0 80px rgba(139,92,246,0.15),
+    1px 1px 0 #000,
+    2px 2px 0 var(--cosmic-blue),
+    3px 3px 0 #000,
+    4px 4px 0 var(--cosmic-purple),
+    5px 5px 0 #000,
+    6px 6px 0 var(--cosmic-blue),
+    8px 8px 4px rgba(0,0,0,0.8);
+  letter-spacing: 0.32em;
+}
+@keyframes hero-3d-rise {
+  0% { opacity: 0; transform: translateY(30px) perspective(600px) rotateX(8deg); }
+  100% { opacity: 1; transform: translateY(0) perspective(600px) rotateX(0deg); }
 }
 
-/* 副标题逐字 */
+/* 标题逐字增强动效 */
+.hero-title .char-glow {
+  display: inline-block;
+  animation: char-pulse 3s ease-in-out infinite;
+  transition: transform 0.3s, color 0.3s;
+}
+.hero-title .char-glow:nth-child(1) { animation-delay: 0s; }
+.hero-title .char-glow:nth-child(2) { animation-delay: 0.15s; }
+.hero-title .char-glow:nth-child(3) { animation-delay: 0.3s; }
+.hero-title .char-glow:nth-child(4) { animation-delay: 0.45s; }
+@keyframes char-pulse {
+  0%,100% { text-shadow: 0 0 10px rgba(255,255,255,0.3), 0 0 20px rgba(59,130,246,0.1); }
+  50% { text-shadow: 0 0 20px rgba(255,255,255,0.6), 0 0 40px rgba(59,130,246,0.3), 0 0 60px rgba(139,92,246,0.15); }
+}
+
+/* 标题故障 glitch 效果 */
+@keyframes glitch-text {
+  0% { transform: translate(0); }
+  20% { transform: translate(-2px, 1px) skewX(-1deg); }
+  40% { transform: translate(2px, -1px) skewX(1deg); }
+  60% { transform: translate(-1px, 2px); }
+  80% { transform: translate(1px, -2px) skewX(-0.5deg); }
+  100% { transform: translate(0); }
+}
+.hero-title.glitch {
+  animation: glitch-text 0.15s ease-in-out 3;
+}
+
+/* 副标题——逐字浮现 + 红色扫描 */
 .hero-sub {
   position: relative;
-  z-index: 8;
+  z-index: 9;
   margin-top: 28px;
-  font-size: clamp(0.9rem, 2vw, 1.2rem);
-  letter-spacing: 0.4em;
-  color: rgba(100,116,139,0.9);
+  font-size: clamp(1rem, 2.2vw, 1.4rem);
+  font-family: "Zhi Mang Xing","Ma Shan Zheng",sans-serif;
+  letter-spacing: 0.5em;
+  color: var(--white);
   text-align: center;
+  text-shadow: 0 0 12px rgba(59,130,246,0.25), 1px 1px 0 #000;
   overflow: hidden;
 }
 .hero-sub span {
   display: inline-block;
   opacity: 0;
-  transform: translateY(20px);
+  transform: translateY(20px) scale(0.8);
+  transition: opacity 0.6s cubic-bezier(.22,1,.36,1), transform 0.6s cubic-bezier(.22,1,.36,1);
+}
+.hero-sub span.revealed {
+  opacity: 1;
+  transform: none;
 }
 
 /* 滚动提示 */
@@ -178,90 +361,164 @@ body {
 .scroll-hint .line {
   width: 1px;
   height: 44px;
-  background: linear-gradient(to bottom, transparent, rgba(34,211,238,0.5));
+  background: linear-gradient(to bottom, transparent, rgba(59,130,246,0.5));
   animation: scroll-line 1.8s ease-in-out infinite;
 }
 .scroll-hint p {
-  font-size: 0.65rem;
-  letter-spacing: 0.35em;
-  color: rgba(100,116,139,0.6);
-  text-transform: uppercase;
+  font-size: 0.7rem;
+  font-family: "Ma Shan Zheng",sans-serif;
+  letter-spacing: 0.4em;
+  color: rgba(255,255,255,0.3);
+  text-shadow: 0 0 8px rgba(59,130,246,0.15);
 }
 @keyframes scroll-line {
   0%,100% { opacity: 0.3; transform: scaleY(1); }
-  50%      { opacity: 1;   transform: scaleY(1.2); }
+  50%      { opacity: 1;   transform: scaleY(1.3); }
 }
 
 /* ─── 幕次通用 ─── */
 .act-eyebrow {
-  font-size: 0.7rem;
-  letter-spacing: 0.5em;
-  color: rgba(34,211,238,0.5);
-  text-transform: uppercase;
+  font-size: 0.75rem;
+  font-family: "Ma Shan Zheng","Zhi Mang Xing",sans-serif;
+  letter-spacing: 0.6em;
+  color: rgba(59,130,246,0.5);
   margin-bottom: 22px;
   opacity: 0;
   transform: translateY(16px);
   transition: opacity 1s, transform 1s;
+  text-shadow: 0 0 20px rgba(59,130,246,0.1);
+  position: relative;
+  overflow: hidden;
+}
+.act-eyebrow:hover {
+  transform: scale(1.08);
+  transition: transform 0.5s cubic-bezier(0.34,1.56,0.64,1);
+  letter-spacing: 0.7em;
+  color: rgba(59,130,246,0.7);
+}
+.act-eyebrow:not(:hover) {
+  transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
 }
 .act-heading {
-  font-size: clamp(2rem, 5vw, 3.8rem);
-  font-weight: 300;
-  letter-spacing: 0.18em;
+  font-size: clamp(2.2rem, 5.5vw, 4rem);
+  font-family: "ZCOOL QingKe HuangYou","Zhi Mang Xing",sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.2em;
   text-align: center;
-  line-height: 1.2;
+  line-height: 1.3;
+  color: var(--white);
+  text-shadow: 0 0 8px rgba(255,255,255,0.1), 2px 2px 0 #000, 4px 4px 0 rgba(59,130,246,0.3);
   opacity: 0;
   transform: translateY(20px);
-  transition: opacity 1.2s 0.1s, transform 1.2s 0.1s;
+  transition: opacity 1.2s 0.1s, transform 1.2s 0.1s, text-shadow 0.4s;
+  position: relative;
+  overflow: hidden;
+}
+.act-heading:hover {
+  text-shadow: 0 0 16px rgba(255,255,255,0.2), 0 0 40px rgba(59,130,246,0.15), 2px 2px 0 #000, 4px 4px 0 var(--cosmic-blue);
+  transform: scale(1.06) translateY(-2px);
+  transition: transform 0.5s cubic-bezier(0.34,1.56,0.64,1);
+}
+.act-heading:not(:hover) {
+  transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
 }
 .act-heading em {
   font-style: normal;
-  color: var(--blood);
+  color: var(--white);
+  text-shadow: 0 0 15px rgba(59,130,246,0.5), 0 0 30px rgba(139,92,246,0.2), 2px 2px 0 #000;
+  display: inline-block;
+  animation: em-glow 3s ease-in-out infinite;
+  transition: color 0.3s, text-shadow 0.3s;
+  position: relative;
+}
+.act-heading em::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(59,130,246,0.4), rgba(139,92,246,0.4), transparent);
+  transform: scaleX(0);
+  transition: transform 0.5s;
+}
+.in-view .act-heading em::after {
+  transform: scaleX(1);
+  transition-delay: 1s;
+}
+@keyframes em-glow {
+  0%,100% { text-shadow: 0 0 15px rgba(59,130,246,0.3), 0 0 30px rgba(139,92,246,0.1), 2px 2px 0 #000; color: var(--white); }
+  25% { color: #60a5fa; }
+  50% { text-shadow: 0 0 25px rgba(59,130,246,0.6), 0 0 50px rgba(139,92,246,0.3), 0 0 80px rgba(34,211,238,0.1), 2px 2px 0 #000; color: #93c5fd; }
+  75% { color: #a78bfa; }
 }
 .act-body {
   max-width: 560px;
   text-align: center;
-  font-size: clamp(0.88rem, 1.5vw, 1.05rem);
-  line-height: 2.1;
-  color: rgba(148,163,184,0.85);
+  font-size: clamp(0.9rem, 1.6vw, 1.1rem);
+  font-family: "Ma Shan Zheng","Zhi Mang Xing",sans-serif;
+  line-height: 2.2;
+  color: rgba(248,250,252,0.75);
   margin-top: 28px;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   opacity: 0;
   transform: translateY(14px);
   transition: opacity 1.2s 0.25s, transform 1.2s 0.25s;
+  position: relative;
+  overflow: hidden;
+}
+.act-body:hover {
+  transform: scale(1.04) translateY(-1px);
+  transition: transform 0.5s cubic-bezier(0.34,1.56,0.64,1);
+}
+.act-body:not(:hover) {
+  transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
 }
 .act-quote {
   margin-top: 36px;
   padding: 18px 28px;
-  border-left: 1px solid rgba(34,211,238,0.25);
-  font-size: 0.92rem;
-  color: rgba(34,211,238,0.65);
-  letter-spacing: 0.12em;
+  border-left: 2px solid rgba(59,130,246,0.25);
+  font-size: 0.95rem;
+  font-family: "Zhi Mang Xing","Ma Shan Zheng",sans-serif;
+  color: rgba(248,250,252,0.65);
+  letter-spacing: 0.15em;
   line-height: 2;
+  text-shadow: 0 0 12px rgba(59,130,246,0.08);
   opacity: 0;
   transform: translateY(12px);
   transition: opacity 1.2s 0.38s, transform 1.2s 0.38s;
+  position: relative;
+  overflow: hidden;
+}
+.act-quote:hover {
+  transform: scale(1.05) translateY(-1px);
+  transition: transform 0.5s cubic-bezier(0.34,1.56,0.64,1);
+  border-left-color: rgba(59,130,246,0.5);
+  text-shadow: 0 0 20px rgba(59,130,246,0.2);
+}
+.act-quote:not(:hover) {
+  transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
 }
 
-/* 可见状态（IntersectionObserver 触发） */
+/* 可见状态（IntersectionObserver 触发）— 注意：不移除 transform，让 hover 能覆盖 */
 .in-view .act-eyebrow,
 .in-view .act-heading,
 .in-view .act-body,
 .in-view .act-quote {
   opacity: 1;
-  transform: none;
 }
 
-/* 幕次背景色叠层 */
-#act-youth  { background: radial-gradient(ellipse at 30% 60%, rgba(15,60,30,0.22) 0%, transparent 65%); }
-#act-rise   { background: radial-gradient(ellipse at 70% 40%, rgba(120,10,10,0.2) 0%, transparent 65%); }
-#act-cosmos { background: radial-gradient(ellipse at 50% 50%, rgba(5,30,70,0.25) 0%, transparent 65%); }
-#act-self   { background: radial-gradient(ellipse at 40% 60%, rgba(60,30,5,0.18) 0%, transparent 65%); }
+/* 幕次背景色叠层——宇宙星云色调 */
+#act-youth  { background: radial-gradient(ellipse at 30% 60%, rgba(30,10,60,0.2) 0%, transparent 65%); }
+#act-rise   { background: radial-gradient(ellipse at 70% 40%, rgba(10,20,60,0.25) 0%, transparent 65%); }
+#act-cosmos { background: radial-gradient(ellipse at 50% 50%, rgba(40,10,50,0.2) 0%, transparent 65%); }
+#act-self   { background: radial-gradient(ellipse at 40% 60%, rgba(10,30,50,0.18) 0%, transparent 65%); }
 
-/* 现实身份卡——仅第四幕使用，无边框样式 */
+/* 现实身份卡 */
 .identity-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 2px;
+  gap: 0;
   max-width: 640px;
   width: 100%;
   margin-top: 48px;
@@ -273,164 +530,192 @@ body {
 .id-item {
   padding: 22px 18px;
   text-align: center;
-  border-top: 1px solid rgba(255,255,255,0.05);
+  border-top: 1px solid rgba(59,130,246,0.08);
+  transition: background 0.3s;
+  position: relative;
+  overflow: hidden;
 }
-.id-item .dao { font-size: 0.7rem; letter-spacing: 0.4em; color: rgba(34,211,238,0.4); margin-bottom: 8px; }
-.id-item .name { font-size: 1rem; letter-spacing: 0.15em; color: rgba(241,245,249,0.88); }
+.id-item:hover {
+  background: rgba(59,130,246,0.04);
+  transform: scale(1.06);
+  transition: transform 0.5s cubic-bezier(0.34,1.56,0.64,1);
+}
+.id-item:not(:hover) {
+  transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+.id-item .dao { font-size: 0.7rem; font-family: "Ma Shan Zheng",sans-serif; letter-spacing: 0.4em; color: rgba(59,130,246,0.35); margin-bottom: 8px; }
+.id-item .name { font-size: 1rem; font-family: "Zhi Mang Xing","ZCOOL QingKe HuangYou",sans-serif; letter-spacing: 0.15em; color: rgba(248,250,252,0.9); text-shadow: 0 0 8px rgba(59,130,246,0.08); }
 
 /* 页脚 */
 #act-footer {
-  min-height: auto;
+  min-height: unset;
   padding: 60px 24px 80px;
-  border-top: 1px solid rgba(255,255,255,0.04);
+  border-top: 1px solid rgba(59,130,246,0.06);
 }
 .footer-inner {
   text-align: center;
-  font-size: 0.72rem;
-  color: rgba(71,85,105,0.7);
-  letter-spacing: 0.25em;
+  font-size: 0.75rem;
+  font-family: "Ma Shan Zheng","Zhi Mang Xing",sans-serif;
+  color: rgba(100,116,139,0.6);
+  letter-spacing: 0.3em;
   line-height: 2.5;
 }
 .footer-inner a {
-  color: rgba(34,211,238,0.5);
+  color: rgba(59,130,246,0.4);
   text-decoration: none;
-  transition: color 0.3s;
+  transition: color 0.3s, text-shadow 0.3s;
 }
-.footer-inner a:hover { color: var(--blood); }
+.footer-inner a:hover { color: var(--cosmic-cyan); text-shadow: 0 0 12px rgba(34,211,238,0.3); }
+.footer-links { margin-top: 12px; }
+.footer-copy { margin-top: 24px; font-size: 0.62rem; color: rgba(71,85,105,0.4); }
+.hero-sub .dot-sep { margin: 0 0.3em; display: inline-block; }
 
-/* 音频控件（隐藏，JS 控制） */
 #ambient-audio { display: none; }
 
-/* 淡入动画 */
 @keyframes fade-rise {
   to { opacity: 1; transform: none; }
 }
 
-/* 粒子拖尾悬停感知（纯视觉辅助） */
-body { cursor: crosshair; }
+/* 方块翻转翻页指示器 */
+.flip-indicator {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  z-index: 100;
+  display: flex;
+  gap: 8px;
+  opacity: 0.4;
+  transition: opacity 0.3s;
+}
+.flip-indicator:hover { opacity: 0.8; }
+.flip-dot {
+  width: 10px;
+  height: 10px;
+  border: 1px solid rgba(59,130,246,0.5);
+  background: transparent;
+  transform: rotate(45deg);
+  transition: background 0.3s, box-shadow 0.3s;
+  cursor: pointer;
+}
+.flip-dot.active {
+  background: var(--cosmic-blue);
+  box-shadow: 0 0 10px var(--cosmic-blue);
+}
+
+/* ═══ 透明水玻璃悬停扫光效果 ═══ */
+/* 玻璃扫光层 — 所有文字元素共用 */
+.act-eyebrow::after,
+.act-heading::after,
+.act-body::after,
+.act-quote::after,
+.id-item::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  z-index: -1;
+  border-radius: 4px;
+  background: linear-gradient(
+    110deg,
+    transparent 30%,
+    rgba(255,255,255,0.04) 40%,
+    rgba(255,255,255,0.08) 45%,
+    rgba(59,130,246,0.05) 50%,
+    rgba(255,255,255,0.08) 55%,
+    rgba(255,255,255,0.04) 60%,
+    transparent 70%
+  );
+  background-size: 300% 100%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s;
+}
+.act-eyebrow:hover::after,
+.act-heading:hover::after,
+.act-body:hover::after,
+.act-quote:hover::after,
+.id-item:hover::after {
+  opacity: 1;
+  animation: glass-sweep 1.2s ease-in-out forwards;
+}
+@keyframes glass-sweep {
+  0%   { background-position: 300% 0; opacity: 0; }
+  15%  { opacity: 1; }
+  85%  { opacity: 1; }
+  100% { background-position: -100% 0; opacity: 0; }
+}
+
+/* 字体淡入闪烁效果 */
+@keyframes text-flicker {
+  0%, 100% { opacity: 1; }
+  3% { opacity: 0.4; }
+  6% { opacity: 1; }
+  7% { opacity: 0.6; }
+  10% { opacity: 1; }
+  97% { opacity: 1; }
+  98% { opacity: 0.3; }
+  100% { opacity: 1; }
+}
+.hero-title {
+  animation: text-flicker 8s 3s infinite;
+}
 
 /* 响应式 */
 @media (max-width: 600px) {
   .hero-title { letter-spacing: 0.14em; }
   .identity-grid { grid-template-columns: 1fr 1fr; }
+  .scan-frame { width: 95vw; }
 }
 </style>
 </head>
 <body>
 
-<!-- 固定粒子层 -->
+<!-- 固定画布层 -->
 <canvas id="canvas3d"></canvas>
-<!-- 鼠标拖尾层 -->
 <canvas id="trail-canvas"></canvas>
-<!-- 点击法阵层 -->
 <canvas id="click-canvas"></canvas>
+<canvas id="scan-canvas"></canvas>
 
-<!-- 背景音效 -->
-<audio id="ambient-audio" loop>
-  <!-- 未来替换为古琴/风声音源 -->
-</audio>
+<audio id="ambient-audio" loop></audio>
 
 <!-- ═══════════════════════════════
      第一幕：英雄降世
 ════════════════════════════════ -->
 <section class="act" id="act-hero">
 
-  <!-- 呼吸光晕 -->
-  <div class="breath-orb"></div>
-
-  <!-- 外圈法阵 -->
-  <div class="rune-ring" style="width:520px;height:520px;margin-left:-260px;margin-top:-260px;">
-    <svg viewBox="0 0 520 520" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="260" cy="260" r="255" stroke="#22d3ee" stroke-width="0.6" stroke-dasharray="4 18"/>
-      <circle cx="260" cy="260" r="220" stroke="#22d3ee" stroke-width="0.3" stroke-dasharray="2 30"/>
-      <polygon points="260,10 495,390 25,390" fill="none" stroke="rgba(34,211,238,0.4)" stroke-width="0.5"/>
-      <polygon points="260,510 25,130 495,130" fill="none" stroke="rgba(185,28,28,0.3)" stroke-width="0.5"/>
-      <circle cx="260" cy="10"  r="3" fill="rgba(34,211,238,0.5)"/>
-      <circle cx="495" cy="390" r="3" fill="rgba(34,211,238,0.5)"/>
-      <circle cx="25"  cy="390" r="3" fill="rgba(34,211,238,0.5)"/>
-      <circle cx="260" cy="510" r="3" fill="rgba(185,28,28,0.5)"/>
-      <circle cx="25"  cy="130" r="3" fill="rgba(185,28,28,0.5)"/>
-      <circle cx="495" cy="130" r="3" fill="rgba(185,28,28,0.5)"/>
-    </svg>
-  </div>
-
-  <!-- 内圈法阵 -->
-  <div class="rune-ring rune-ring-2" style="width:340px;height:340px;margin-left:-170px;margin-top:-170px;">
-    <svg viewBox="0 0 340 340" fill="none">
-      <circle cx="170" cy="170" r="165" stroke="#d4a044" stroke-width="0.4" stroke-dasharray="1 12"/>
-      <circle cx="170" cy="170" r="140" stroke="#d4a044" stroke-width="0.3" stroke-dasharray="3 20"/>
-      <line x1="170" y1="5"  x2="170" y2="335" stroke="rgba(212,160,68,0.15)" stroke-width="0.4"/>
-      <line x1="5"   y1="170" x2="335" y2="170" stroke="rgba(212,160,68,0.15)" stroke-width="0.4"/>
-      <line x1="52"  y1="52"  x2="288" y2="288" stroke="rgba(212,160,68,0.1)" stroke-width="0.4"/>
-      <line x1="288" y1="52"  x2="52"  y2="288" stroke="rgba(212,160,68,0.1)" stroke-width="0.4"/>
-    </svg>
-  </div>
-
-  <!-- 人物剪影（未来替换为立绘图片） -->
-<<<<<<< HEAD
+  <!-- 人物剪影 —— 时间银河冲击 -->
   <div id="character">
-    <svg viewBox="0 0 400 700" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-    <image href="https://raw.githubusercontent.com/Laidecai/Hello_World/main/assets/main_gif/daaixianzun.gif" x="0" y="0" width="400" height="700" />
-      <!-- 长袍身形 -->
-      <ellipse cx="200" cy="130" rx="52" ry="60" fill="rgba(241,245,249,0.9)"/>
-      <!-- 头发 -->
-      <path d="M148 110 Q130 80 155 60 Q200 40 245 60 Q270 80 252 110" fill="rgba(30,30,40,0.95)"/>
-      <path d="M148 110 Q120 130 130 180 L148 175Z" fill="rgba(30,30,40,0.95)"/>
-      <path d="M252 110 Q280 130 270 180 L252 175Z" fill="rgba(30,30,40,0.95)"/>
-      <!-- 长袍主体 -->
-      <path d="M148 180 Q130 200 110 300 Q90 420 80 560 Q80 620 120 650 L200 660 L280 650 Q320 620 320 560 Q310 420 290 300 Q270 200 252 180Z" 
-            fill="rgba(10,12,20,0.92)" stroke="rgba(34,211,238,0.2)" stroke-width="1"/>
-      <!-- 衣领 -->
-      <path d="M170 180 Q200 220 230 180" fill="none" stroke="rgba(212,160,68,0.4)" stroke-width="1.5"/>
-      <!-- 腰带 -->
-      <path d="M115 310 Q200 325 285 310" stroke="rgba(212,160,68,0.35)" stroke-width="1.2" fill="none"/>
-      <!-- 袖子 -->
-      <path d="M148 200 Q80 240 40 300 Q20 330 50 340 Q90 320 130 290 L148 250Z"
-            fill="rgba(10,12,20,0.85)" stroke="rgba(34,211,238,0.15)" stroke-width="0.8"/>
-      <path d="M252 200 Q320 240 360 300 Q380 330 350 340 Q310 320 270 290 L252 250Z"
-            fill="rgba(10,12,20,0.85)" stroke="rgba(34,211,238,0.15)" stroke-width="0.8"/>
-      <!-- 左手印诀 -->
-      <ellipse cx="48" cy="342" rx="14" ry="10" fill="rgba(241,245,249,0.7)"/>
-      <!-- 右手印诀 -->
-      <ellipse cx="352" cy="342" rx="14" ry="10" fill="rgba(241,245,249,0.7)"/>
-      <!-- 衣纹细节 -->
-      <path d="M160 250 Q180 350 170 460 Q168 520 170 580" stroke="rgba(34,211,238,0.1)" stroke-width="0.6" fill="none"/>
-      <path d="M240 250 Q220 350 230 460 Q232 520 230 580" stroke="rgba(34,211,238,0.1)" stroke-width="0.6" fill="none"/>
-      <!-- 气息流线 -->
-      <path d="M48 342 Q0 300 30 250 Q60 200 100 230" stroke="rgba(34,211,238,0.25)" stroke-width="0.8" fill="none" stroke-dasharray="3 6"/>
-      <path d="M352 342 Q400 300 370 250 Q340 200 300 230" stroke="rgba(34,211,238,0.25)" stroke-width="0.8" fill="none" stroke-dasharray="3 6"/>
-    </svg>
+    <img src="./assets/fangyuan.png" alt="方源" />
+    <canvas id="char-glitch" class="char-glitch-canvas"></canvas>
   </div>
 
-=======
-    <div id="character">
-    <img
-      src="./assets/fangyuan.png"
-      alt="方源"
-      class="character-art"
-    />
-    </div>
-  .character-art{
-    width:100%;
-    height:auto;
-    display:block;
-    opacity:.9;
-}
->>>>>>> e08df36 (Update index.html)
-  <!-- 主标题 -->
-  <h1 class="hero-title">古月方源</h1>
+  <!-- 标题扫描框（JS 动态定位到"古月方源"） -->
+  <div class="scan-frame" id="title-scan-frame">
+    <div class="scan-beam"></div>
+    <span class="corner tl"></span>
+    <span class="corner tr"></span>
+    <span class="corner bl"></span>
+    <span class="corner br"></span>
+  </div>
+
+  <!-- 主标题 3D（逐字包裹） -->
+  <h1 class="hero-title" id="hero-title">
+    <span class="char-glow">古</span>
+    <span class="char-glow">月</span>
+    <span class="char-glow">方</span>
+    <span class="char-glow">源</span>
+  </h1>
 
   <!-- 副标题逐字 -->
   <p class="hero-sub" id="hero-sub-text">
     <span>天</span><span>若</span><span>阻</span><span>我</span>
-    <span style="margin:0 0.3em">·</span>
+    <span class="dot-sep">·</span>
     <span>我</span><span>便</span><span>踏</span><span>碎</span><span>这</span><span>天</span>
   </p>
 
   <!-- 滚动指示 -->
   <div class="scroll-hint">
     <div class="line"></div>
-    <p>展开传记</p>
+    <p>卷轴展开</p>
   </div>
 </section>
 
@@ -531,12 +816,12 @@ body { cursor: crosshair; }
 <footer class="act" id="act-footer">
   <div class="footer-inner">
     <p>修行者 · 宿命既定，唯我逆天</p>
-    <p style="margin-top:12px;">
-      <a href="https://github.com/Laidecai" target="_blank">GitHub</a>
+    <p class="footer-links">
+      <a href="https://github.com/Laidecai" target="_blank" rel="noopener">GitHub</a>
       &nbsp;·&nbsp;
-      <a href="mailto:599494220@qq.com" target="_blank">599494220@qq.com</a>
+      <a href="mailto:599494220@qq.com" target="_blank" rel="noopener">599494220@qq.com</a>
     </p>
-    <p style="margin-top:24px;font-size:0.62rem;color:rgba(71,85,105,0.4);">
+    <p class="footer-copy">
       © 古月方源 · Laidecai.github.io
     </p>
   </div>
@@ -546,7 +831,7 @@ body { cursor: crosshair; }
 
 <script>
 /* ═══════════════════════════════
-   Three.js 粒子宇宙
+   Three.js — 宇宙银河粒子系统
 ════════════════════════════════ */
 (function () {
   const canvas = document.getElementById('canvas3d');
@@ -555,138 +840,266 @@ body { cursor: crosshair; }
   renderer.setSize(window.innerWidth, window.innerHeight);
 
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 3000);
-  camera.position.z = 600;
+  const camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 1, 5000);
+  camera.position.z = 900;
 
-  /* ── 粒子纹理：柔和发光圆 ── */
-  function makeSprite(color) {
-    const c = document.createElement('canvas');
-    c.width = c.height = 32;
-    const ctx = c.getContext('2d');
-    const g = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
-    g.addColorStop(0, color);
+  /* ── 发光粒子纹理 ── */
+  function makeGlow(c, size) {
+    const s = size || 32;
+    const e = document.createElement('canvas');
+    e.width = e.height = s;
+    const x = e.getContext('2d');
+    const g = x.createRadialGradient(s/2, s/2, 0, s/2, s/2, s/2);
+    g.addColorStop(0, c);
+    g.addColorStop(0.4, c.replace('1)', '0.6)'));
     g.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = g;
-    ctx.fillRect(0, 0, 32, 32);
-    return new THREE.CanvasTexture(c);
+    x.fillStyle = g;
+    x.fillRect(0, 0, s, s);
+    return new THREE.CanvasTexture(e);
   }
+  const texStar   = makeGlow('rgba(255,255,255,1)', 16);
+  const texBlue   = makeGlow('rgba(59,130,246,1)', 32);
+  const texCyan   = makeGlow('rgba(34,211,238,1)', 32);
+  const texPurple = makeGlow('rgba(139,92,246,1)', 32);
+  const texPink   = makeGlow('rgba(236,72,153,1)', 24);
+  const texRedS   = makeGlow('rgba(220,38,38,1)', 16);
 
-  const texBlue = makeSprite('rgba(34,211,238,1)');
-  const texRed  = makeSprite('rgba(185,28,28,1)');
-  const texGold = makeSprite('rgba(212,160,68,1)');
+  /* ══════════════════════════════
+     螺旋星系主体
+     ══════════════════════════════ */
+  const N_SPIRAL = 26000;
+  const spirals = [];
 
-  /* ── 银河主体（蓝色流动粒子）── */
-  const N_GALAXY = 2500;
-  const geoGalaxy = new THREE.BufferGeometry();
-  const posG = new Float32Array(N_GALAXY * 3);
-  for (let i = 0; i < N_GALAXY * 3; i += 3) {
-    const angle = Math.random() * Math.PI * 2;
-    const radius = Math.pow(Math.random(), 0.5) * 800;
-    const spread = (Math.random() - 0.5) * 120;
-    posG[i]   = Math.cos(angle) * radius + (Math.random() - 0.5) * 80;
-    posG[i+1] = spread;
-    posG[i+2] = Math.sin(angle) * radius * 0.4 + (Math.random() - 0.5) * 80;
-  }
-  geoGalaxy.setAttribute('position', new THREE.BufferAttribute(posG, 3));
-  const matGalaxy = new THREE.PointsMaterial({
-    size: 2.8, map: texBlue, blending: THREE.AdditiveBlending,
-    depthWrite: false, transparent: true, opacity: 0.55
-  });
-  const galaxy = new THREE.Points(geoGalaxy, matGalaxy);
-  scene.add(galaxy);
-
-  /* ── 宿命节点（红色闪烁粒子）── */
-  const N_RED = 90;
-  const geoRed = new THREE.BufferGeometry();
-  const posR = new Float32Array(N_RED * 3);
-  for (let i = 0; i < N_RED * 3; i += 3) {
-    posR[i]   = (Math.random() - 0.5) * 1400;
-    posR[i+1] = (Math.random() - 0.5) * 800;
-    posR[i+2] = (Math.random() - 0.5) * 600;
-  }
-  geoRed.setAttribute('position', new THREE.BufferAttribute(posR, 3));
-  const matRed = new THREE.PointsMaterial({
-    size: 4.5, map: texRed, blending: THREE.AdditiveBlending,
-    depthWrite: false, transparent: true, opacity: 0.7
-  });
-  const redNodes = new THREE.Points(geoRed, matRed);
-  scene.add(redNodes);
-
-  /* ── 流星系统 ── */
-  const meteors = [];
-  function spawnMeteor() {
+  function makeSpiral(armOffset, colorTex, baseSize, spreadFactor) {
+    const n = Math.floor(N_SPIRAL / 4);
+    // 每臂再加独立散布粒子
+    const nExtra = Math.floor(n * 0.3);
     const geo = new THREE.BufferGeometry();
-    const len = 14;
-    const pos = new Float32Array(len * 3);
-    const startX = (Math.random() - 0.5) * 1200;
-    const startY = 300 + Math.random() * 200;
-    const dz = 0;
-    for (let i = 0; i < len; i++) {
-      pos[i*3]   = startX - i * 18;
-      pos[i*3+1] = startY - i * 12;
-      pos[i*3+2] = dz;
+    const pos = new Float32Array(n * 3);
+    const cols = new Float32Array(n);
+    const sz = new Float32Array(n);
+
+    for (let i = 0; i < n; i++) {
+      // 螺旋分布
+      const t = Math.pow(Math.random(), 0.6) * Math.PI * 3;
+      const radius = 50 + t * 100;
+      const armAngle = t + armOffset;
+      const spread = (Math.random() - 0.5) * spreadFactor * (1 + t * 0.15);
+      const angle = armAngle + spread;
+      const height = Math.sin(t * 0.5) * 60 + (Math.random() - 0.5) * 30;
+
+      pos[i*3]   = Math.cos(angle) * radius;
+      pos[i*3+1] = height;
+      pos[i*3+2] = Math.sin(angle) * radius;
+      cols[i] = Math.random();
+      sz[i] = baseSize + Math.random() * 3;
     }
     geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    const mat = new THREE.LineBasicMaterial({
-      color: 0x22d3ee, transparent: true, opacity: 0.0,
-      blending: THREE.AdditiveBlending
+    geo.setAttribute('size', new THREE.BufferAttribute(sz, 1));
+
+    // 额外散布粒子（星臂间星尘）
+    const geoExtra = new THREE.BufferGeometry();
+    const posEx = new Float32Array(nExtra * 3);
+    for (let i = 0; i < nExtra; i++) {
+      const t = Math.pow(Math.random(), 0.5) * Math.PI * 3;
+      const radius = 30 + t * 110;
+      const armAngle = t + armOffset + (Math.random() - 0.5) * 0.6;
+      const angle = armAngle;
+      posEx[i*3]   = Math.cos(angle) * radius + (Math.random() - 0.5) * 40;
+      posEx[i*3+1] = Math.sin(t * 0.4) * 50 + (Math.random() - 0.5) * 60;
+      posEx[i*3+2] = Math.sin(angle) * radius + (Math.random() - 0.5) * 40;
+    }
+    geoExtra.setAttribute('position', new THREE.BufferAttribute(posEx, 3));
+    const matExtra = new THREE.PointsMaterial({
+      size: baseSize * 0.6, map: colorTex, blending: THREE.AdditiveBlending,
+      depthWrite: false, transparent: true, opacity: 0.2,
+      sizeAttenuation: true
     });
-    const line = new THREE.Line(geo, mat);
-    scene.add(line);
-    meteors.push({ line, vx: -3.5, vy: -2.2, life: 0, maxLife: 55 });
+    const extraPoints = new THREE.Points(geoExtra, matExtra);
+
+    const mat = new THREE.PointsMaterial({
+      size: baseSize + 1, map: colorTex, blending: THREE.AdditiveBlending,
+      depthWrite: false, transparent: true, opacity: 0.6,
+      sizeAttenuation: true
+    });
+    const points = new THREE.Points(geo, mat);
+    // 合并组内包含主臂+散布
+    const group = new THREE.Group();
+    group.add(points);
+    group.add(extraPoints);
+    spirals.push({ group, mat, pos, n });
+    return group;
   }
 
-  /* ── 鼠标偏移 ── */
+  const spiralGroup = new THREE.Group();
+  spiralGroup.add(makeSpiral(0, texBlue, 2.2, 0.25));
+  spiralGroup.add(makeSpiral(Math.PI * 0.5, texCyan, 2.0, 0.2));
+  spiralGroup.add(makeSpiral(Math.PI, texPurple, 2.4, 0.3));
+  spiralGroup.add(makeSpiral(Math.PI * 1.5, texPink, 1.8, 0.22));
+  spiralGroup.rotation.x = 0.3;
+  spiralGroup.rotation.z = -0.15;
+  scene.add(spiralGroup);
+
+  /* ══════════════════════════════
+     星系核（明亮核心）
+     ══════════════════════════════ */
+  const N_CORE = 2500;
+  const geoCore = new THREE.BufferGeometry();
+  const posCr = new Float32Array(N_CORE * 3);
+  for (let i = 0; i < N_CORE; i++) {
+    const r = Math.pow(Math.random(), 2) * 120;
+    const a = Math.random() * Math.PI * 2;
+    posCr[i*3]   = Math.cos(a) * r;
+    posCr[i*3+1] = (Math.random() - 0.5) * 25;
+    posCr[i*3+2] = Math.sin(a) * r;
+  }
+  geoCore.setAttribute('position', new THREE.BufferAttribute(posCr, 3));
+  const matCore = new THREE.PointsMaterial({
+    size: 4, map: texStar, blending: THREE.AdditiveBlending,
+    depthWrite: false, transparent: true, opacity: 0.8,
+    color: 0x88ccff
+  });
+  const core = new THREE.Points(geoCore, matCore);
+  spiralGroup.add(core);
+
+  /* ══════════════════════════════
+     星云光晕（大尺寸半透明粒子）
+     ══════════════════════════════ */
+  const N_NEBULA = 500;
+  const geoNeb = new THREE.BufferGeometry();
+  const posNb = new Float32Array(N_NEBULA * 3);
+  const colsNb = new Float32Array(N_NEBULA);
+  for (let i = 0; i < N_NEBULA; i++) {
+    const r = 100 + Math.random() * 500;
+    const a = Math.random() * Math.PI * 2;
+    posNb[i*3]   = Math.cos(a) * r + (Math.random() - 0.5) * 100;
+    posNb[i*3+1] = (Math.random() - 0.5) * 100;
+    posNb[i*3+2] = Math.sin(a) * r + (Math.random() - 0.5) * 100;
+    colsNb[i] = Math.random();
+  }
+  geoNeb.setAttribute('position', new THREE.BufferAttribute(posNb, 3));
+
+  const matNeb = new THREE.PointsMaterial({
+    size: 60, map: texPurple, blending: THREE.AdditiveBlending,
+    depthWrite: false, transparent: true, opacity: 0.06,
+    sizeAttenuation: true
+  });
+  const nebula = new THREE.Points(geoNeb, matNeb);
+  scene.add(nebula);
+
+  /* ── 第二层星云 ── */
+  const matNeb2 = new THREE.PointsMaterial({
+    size: 80, map: texBlue, blending: THREE.AdditiveBlending,
+    depthWrite: false, transparent: true, opacity: 0.04,
+    sizeAttenuation: true
+  });
+  const nebula2 = new THREE.Points(geoNeb, matNeb2);
+  scene.add(nebula2);
+
+  /* ══════════════════════════════
+     远处背景星群
+     ══════════════════════════════ */
+  const N_BG = 8000;
+  const geoBg = new THREE.BufferGeometry();
+  const posBg = new Float32Array(N_BG * 3);
+  const szBg = new Float32Array(N_BG);
+  for (let i = 0; i < N_BG; i++) {
+    posBg[i*3]   = (Math.random() - 0.5) * 4000;
+    posBg[i*3+1] = (Math.random() - 0.5) * 2500;
+    posBg[i*3+2] = (Math.random() - 0.5) * 2500 - 600;
+    szBg[i] = 0.5 + Math.random() * 2;
+  }
+  geoBg.setAttribute('position', new THREE.BufferAttribute(posBg, 3));
+  geoBg.setAttribute('size', new THREE.BufferAttribute(szBg, 1));
+  const matBg = new THREE.PointsMaterial({
+    size: 1.2, map: texStar, blending: THREE.AdditiveBlending,
+    depthWrite: false, transparent: true, opacity: 0.15,
+    sizeAttenuation: true
+  });
+  const bgStars = new THREE.Points(geoBg, matBg);
+  scene.add(bgStars);
+
+  /* ── 红色警戒星（少量点缀）── */
+  const N_RED = 150;
+  const geoRed = new THREE.BufferGeometry();
+  const posRd = new Float32Array(N_RED * 3);
+  for (let i = 0; i < N_RED; i++) {
+    const a = Math.random() * Math.PI * 2;
+    const r = 200 + Math.random() * 600;
+    posRd[i*3]   = Math.cos(a) * r;
+    posRd[i*3+1] = (Math.random() - 0.5) * 200;
+    posRd[i*3+2] = Math.sin(a) * r;
+  }
+  geoRed.setAttribute('position', new THREE.BufferAttribute(posRd, 3));
+  const matRed = new THREE.PointsMaterial({
+    size: 3.5, map: texRedS, blending: THREE.AdditiveBlending,
+    depthWrite: false, transparent: true, opacity: 0.15
+  });
+  const redStars = new THREE.Points(geoRed, matRed);
+  spiralGroup.add(redStars);
+
+  /* ── 前景星尘（景深粒子）── */
+  const N_DUST = 1200;
+  const geoDust = new THREE.BufferGeometry();
+  const posDs = new Float32Array(N_DUST * 3);
+  for (let i = 0; i < N_DUST; i++) {
+    posDs[i*3]   = (Math.random() - 0.5) * 2000;
+    posDs[i*3+1] = (Math.random() - 0.5) * 1200;
+    posDs[i*3+2] = -200 + Math.random() * 300;
+  }
+  geoDust.setAttribute('position', new THREE.BufferAttribute(posDs, 3));
+  const matDust = new THREE.PointsMaterial({
+    size: 0.6, map: texStar, blending: THREE.AdditiveBlending,
+    depthWrite: false, transparent: true, opacity: 0.08,
+    sizeAttenuation: true
+  });
+  const dust = new THREE.Points(geoDust, matDust);
+  scene.add(dust);
+
+  /* ── 鼠标跟踪 ── */
   let mx = 0, my = 0;
   document.addEventListener('mousemove', e => {
     mx = (e.clientX / window.innerWidth  - 0.5) * 2;
     my = (e.clientY / window.innerHeight - 0.5) * 2;
   });
 
-  /* ── 呼吸时钟 ── */
   let t = 0;
-  let meteorTimer = 0;
 
   function animate() {
     requestAnimationFrame(animate);
-    t += 0.008;
+    t += 0.005;
 
-    galaxy.rotation.y += 0.0003;
-    galaxy.rotation.x  = Math.sin(t * 0.3) * 0.04;
+    /* 星系缓慢自转 */
+    spiralGroup.rotation.y += 0.0012;
+    spiralGroup.rotation.x = 0.3 + Math.sin(t * 0.08) * 0.02;
+    spiralGroup.rotation.z = -0.15 + Math.sin(t * 0.05) * 0.01;
 
-    redNodes.material.opacity = 0.4 + Math.sin(t * 1.8) * 0.3;
-    redNodes.rotation.y -= 0.0006;
+    /* 核心呼吸脉动 */
+    matCore.size = 4 + Math.sin(t * 0.6) * 1.5;
+    matCore.opacity = 0.7 + Math.sin(t * 0.5) * 0.15;
 
-    /* 粒子呼吸缩放 */
-    matGalaxy.size = 2.8 + Math.sin(t) * 0.5;
+    /* 星云缓慢旋转 */
+    nebula.rotation.y += 0.00015;
+    nebula.rotation.x += 0.00005;
+    nebula2.rotation.y += 0.0002;
+    nebula2.rotation.x -= 0.00005;
 
-    /* 相机随鼠标 */
-    camera.position.x += (mx * 140 - camera.position.x) * 0.04;
-    camera.position.y += (-my * 80  - camera.position.y) * 0.04;
-    camera.lookAt(scene.position);
+    /* 前景星尘浮动 */
+    dust.rotation.y += 0.0003;
+    dust.rotation.x += 0.0001;
+    matDust.opacity = 0.06 + Math.sin(t * 0.15) * 0.03;
 
-    /* 流星 */
-    meteorTimer++;
-    if (meteorTimer > 220 + Math.random() * 300) {
-      spawnMeteor();
-      meteorTimer = 0;
-    }
-    for (let i = meteors.length - 1; i >= 0; i--) {
-      const m = meteors[i];
-      m.life++;
-      const pos = m.line.geometry.attributes.position.array;
-      for (let j = 0; j < pos.length; j += 3) {
-        pos[j]   += m.vx;
-        pos[j+1] += m.vy;
-      }
-      m.line.geometry.attributes.position.needsUpdate = true;
-      const p = m.life / m.maxLife;
-      m.line.material.opacity = p < 0.3 ? p / 0.3 * 0.8 : (1 - (p - 0.3) / 0.7) * 0.8;
-      if (m.life >= m.maxLife) {
-        scene.remove(m.line);
-        meteors.splice(i, 1);
-      }
-    }
+    /* 背景星群闪烁 */
+    matBg.opacity = 0.12 + Math.sin(t * 0.2) * 0.04;
+
+    /* 红色星闪烁 */
+    matRed.opacity = 0.1 + Math.sin(t * 1.1) * 0.12;
+    matRed.size = 3 + Math.sin(t * 0.8) * 1.5;
+
+    /* 相机跟随鼠标——银河视角 */
+    camera.position.x += (mx * 120 - camera.position.x) * 0.02;
+    camera.position.y += (-my * 80 - camera.position.y) * 0.02;
+    camera.lookAt(new THREE.Vector3(0, 0, 0));
 
     renderer.render(scene, camera);
   }
@@ -701,130 +1114,383 @@ body { cursor: crosshair; }
 
 
 /* ═══════════════════════════════
-   鼠标拖尾粒子
+   鼠标拖尾 — 星河星尘
 ════════════════════════════════ */
 (function () {
   const canvas = document.getElementById('trail-canvas');
   const ctx = canvas.getContext('2d');
-  canvas.width  = window.innerWidth;
-  canvas.height = window.innerHeight;
+  let W = canvas.width  = window.innerWidth;
+  let H = canvas.height = window.innerHeight;
 
   const trails = [];
+  const palette = ['rgba(59,130,246,', 'rgba(34,211,238,', 'rgba(139,92,246,', 'rgba(255,255,255,'];
   let mouse = { x: -999, y: -999 };
 
   document.addEventListener('mousemove', e => {
     mouse.x = e.clientX;
     mouse.y = e.clientY;
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 5; i++) {
       trails.push({
-        x: mouse.x + (Math.random() - 0.5) * 10,
-        y: mouse.y + (Math.random() - 0.5) * 10,
-        vx: (Math.random() - 0.5) * 1.2,
-        vy: (Math.random() - 0.5) * 1.2 - 0.5,
+        x: mouse.x + (Math.random() - 0.5) * 16,
+        y: mouse.y + (Math.random() - 0.5) * 16,
+        vx: (Math.random() - 0.5) * 1.8,
+        vy: (Math.random() - 0.5) * 1.8 - 0.2,
         life: 1,
-        size: Math.random() * 2.5 + 0.5,
-        hue: Math.random() > 0.8 ? 'rgba(185,28,28,' : 'rgba(34,211,238,'
+        size: Math.random() * 3.5 + 0.5,
+        color: palette[Math.floor(Math.random() * palette.length)]
       });
     }
   });
 
   function loop() {
     requestAnimationFrame(loop);
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, W, H);
     for (let i = trails.length - 1; i >= 0; i--) {
       const p = trails[i];
       p.x += p.vx;
       p.y += p.vy;
-      p.life -= 0.032;
+      p.life -= 0.025;
       if (p.life <= 0) { trails.splice(i, 1); continue; }
+      const s = p.size * p.life;
       ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
-      ctx.fillStyle = p.hue + (p.life * 0.6) + ')';
+      ctx.arc(p.x, p.y, s + 0.5, 0, Math.PI * 2);
+      ctx.fillStyle = p.color + (p.life * 0.6) + ')';
       ctx.fill();
+      // 星芒
+      ctx.shadowColor = p.color + '0.3)';
+      ctx.shadowBlur = s * 2;
+      ctx.fill();
+      ctx.shadowBlur = 0;
     }
   }
   loop();
 
   window.addEventListener('resize', () => {
-    canvas.width  = window.innerWidth;
-    canvas.height = window.innerHeight;
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
   });
 })();
 
 
 /* ═══════════════════════════════
-   点击法阵扩散
+   点击扩散 — 星河冲击波 + 字体故障
 ════════════════════════════════ */
 (function () {
   const canvas = document.getElementById('click-canvas');
   const ctx = canvas.getContext('2d');
-  canvas.width  = window.innerWidth;
-  canvas.height = window.innerHeight;
+  let W = canvas.width  = window.innerWidth;
+  let H = canvas.height = window.innerHeight;
 
-  const arrays = [];
+  const rings = [];
 
   document.addEventListener('click', e => {
-    arrays.push({ x: e.clientX, y: e.clientY, r: 0, life: 1 });
-    arrays.push({ x: e.clientX, y: e.clientY, r: 0, life: 1, delay: 8 });
+    // 星河冲击波
+    const colors = ['rgba(59,130,246,', 'rgba(34,211,238,', 'rgba(139,92,246,'];
+    rings.push({ x: e.clientX, y: e.clientY, r: 0, life: 1, color: colors[0], delay: 0 });
+    rings.push({ x: e.clientX, y: e.clientY, r: 0, life: 1, color: colors[1], delay: 5 });
+    rings.push({ x: e.clientX, y: e.clientY, r: 0, life: 1, color: colors[2], delay: 10 });
+
+    // 标题 glitch 故障效果
+    const title = document.getElementById('hero-title');
+    if (title) {
+      title.classList.add('glitch');
+      title.style.textShadow = `0 0 40px rgba(59,130,246,0.6), 0 0 80px rgba(139,92,246,0.3), 1px 1px 0 #000, 3px 3px 0 var(--cosmic-blue)`;
+      setTimeout(() => {
+        title.classList.remove('glitch');
+        title.style.textShadow = '';
+      }, 300);
+    }
+
+    // 扫描框闪烁
+    const frame = document.getElementById('title-scan-frame');
+    if (frame) {
+      frame.classList.add('active');
+      setTimeout(() => frame.classList.remove('active'), 400);
+    }
   });
 
-  function drawArray(x, y, r, alpha) {
+  function drawRing(x, y, r, alpha, color) {
     ctx.save();
     ctx.translate(x, y);
-    ctx.rotate(r * 0.01);
-    ctx.globalAlpha = alpha;
-    ctx.strokeStyle = '#22d3ee';
-    ctx.lineWidth = 0.7;
+    ctx.rotate(r * 0.02);
+    ctx.globalAlpha = alpha * 0.4;
+    ctx.strokeStyle = color + '1)';
+    ctx.lineWidth = 1.5;
 
-    /* 六边形法阵 */
+    // 外环
+    ctx.beginPath();
+    ctx.arc(0, 0, r, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // 内六边形
     ctx.beginPath();
     for (let i = 0; i < 6; i++) {
-      const a = (i / 6) * Math.PI * 2 - Math.PI / 6;
-      const px = Math.cos(a) * r;
-      const py = Math.sin(a) * r;
+      const a = (i / 6) * Math.PI * 2;
+      const px = Math.cos(a) * r * 0.5;
+      const py = Math.sin(a) * r * 0.5;
       i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
     }
     ctx.closePath();
+    ctx.strokeStyle = color + '0.5)';
     ctx.stroke();
 
-    /* 内圆 */
-    ctx.beginPath();
-    ctx.arc(0, 0, r * 0.6, 0, Math.PI * 2);
-    ctx.stroke();
-
-    /* 外圆 */
-    ctx.beginPath();
-    ctx.arc(0, 0, r * 1.15, 0, Math.PI * 2);
-    ctx.stroke();
-
-    /* 放射线 */
-    for (let i = 0; i < 6; i++) {
-      const a = (i / 6) * Math.PI * 2;
+    // 星光散点
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2 + r * 0.01;
+      const d = r * (0.6 + Math.random() * 0.3);
       ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.lineTo(Math.cos(a) * r * 0.55, Math.sin(a) * r * 0.55);
-      ctx.stroke();
+      ctx.arc(Math.cos(a) * d, Math.sin(a) * d, 1.5, 0, Math.PI * 2);
+      ctx.fillStyle = color + (0.3 + Math.random() * 0.3) + ')';
+      ctx.fill();
     }
     ctx.restore();
   }
 
   function loop() {
     requestAnimationFrame(loop);
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    for (let i = arrays.length - 1; i >= 0; i--) {
-      const a = arrays[i];
-      if (a.delay && a.delay > 0) { a.delay--; continue; }
-      a.r += 4.5;
-      a.life -= 0.028;
-      if (a.life <= 0) { arrays.splice(i, 1); continue; }
-      drawArray(a.x, a.y, a.r, a.life * 0.7);
+    ctx.clearRect(0, 0, W, H);
+
+    for (let i = rings.length - 1; i >= 0; i--) {
+      const a = rings[i];
+      if (a.delay > 0) { a.delay--; continue; }
+      a.r += 3.5;
+      a.life -= 0.018;
+      if (a.life <= 0) { rings.splice(i, 1); continue; }
+      drawRing(a.x, a.y, a.r, a.life, a.color);
     }
   }
   loop();
 
   window.addEventListener('resize', () => {
-    canvas.width  = window.innerWidth;
-    canvas.height = window.innerHeight;
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  });
+})();
+
+
+/* ═══════════════════════════════
+   封面人物 —— 故障/能量/时间扭曲效果
+════════════════════════════════ */
+(function () {
+  const container = document.getElementById('character');
+  const canvas = document.getElementById('char-glitch');
+  if (!container || !canvas) return;
+
+  const ctx = canvas.getContext('2d');
+  let W, H;
+
+  function resize() {
+    const rect = container.getBoundingClientRect();
+    canvas.width = W = rect.width;
+    canvas.height = H = rect.height;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  let t = 0;
+  let glitchTimer = 0;
+  let isGlitching = false;
+  let glitchDuration = 0;
+
+  /* 能量粒子 */
+  const particles = [];
+  for (let i = 0; i < 40; i++) {
+    particles.push({
+      x: Math.random(),
+      y: 0.3 + Math.random() * 0.7,
+      size: 1 + Math.random() * 3,
+      speedX: (Math.random() - 0.5) * 0.004,
+      speedY: -(0.002 + Math.random() * 0.006),
+      phase: Math.random() * Math.PI * 2,
+      alpha: 0.2 + Math.random() * 0.5,
+      color: Math.random() > 0.5 ? '59,130,246' : '139,92,246'
+    });
+  }
+
+  function drawGlitch() {
+    if (isGlitching && glitchDuration > 0) {
+      glitchDuration--;
+      // 随机撕裂块 — 降低透明度
+      const blocks = 2 + Math.floor(Math.random() * 3);
+      for (let b = 0; b < blocks; b++) {
+        const y = Math.random() * H;
+        const h = 1 + Math.random() * 4;
+        const offset = (Math.random() - 0.5) * 12;
+        ctx.fillStyle = `rgba(59,130,246,${0.04 + Math.random() * 0.06})`;
+        ctx.fillRect(offset, y, W + Math.abs(offset), h);
+        ctx.fillStyle = `rgba(34,211,238,${0.02 + Math.random() * 0.04})`;
+        ctx.fillRect(-offset * 0.5, y + h + 1, W, 1);
+        ctx.fillStyle = `rgba(236,72,153,${0.02 + Math.random() * 0.04})`;
+        ctx.fillRect(offset * 0.3, y - 1, W, 1);
+      }
+      // 噪点 — 更少更淡
+      for (let p = 0; p < 10; p++) {
+        ctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.04})`;
+        ctx.fillRect(Math.random() * W, Math.random() * H, 1, 1);
+      }
+    }
+    if (glitchDuration <= 0) isGlitching = false;
+  }
+
+  function drawEnergyWaves() {
+    // 时间扭曲能量波
+    const waveCount = 3;
+    for (let w = 0; w < waveCount; w++) {
+      ctx.beginPath();
+      ctx.strokeStyle = `rgba(59,130,246,${0.02 + Math.sin(t * 0.5 + w) * 0.015})`;
+      ctx.lineWidth = 1;
+      for (let x = 0; x < W; x += 2) {
+        const y = H * 0.85 + Math.sin(x * 0.01 + t * 1.5 + w * 2) * 15
+          + Math.sin(x * 0.02 + t * 0.8 + w) * 8;
+        x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+  }
+
+  function drawParticles() {
+    for (const p of particles) {
+      p.x += p.speedX + Math.sin(t + p.phase) * 0.002;
+      p.y += p.speedY;
+      if (p.y < 0) { p.y = 1; p.x = Math.random(); }
+
+      const px = p.x * W;
+      const py = p.y * H;
+      const alpha = p.alpha * (0.5 + Math.sin(t * 0.8 + p.phase) * 0.3);
+      const size = p.size * (0.8 + Math.sin(t + p.phase) * 0.3);
+
+      ctx.beginPath();
+      ctx.arc(px, py, size, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${p.color},${alpha * 0.15})`;
+      ctx.fill();
+
+      // 粒子光晕
+      ctx.shadowColor = `rgba(${p.color},${alpha * 0.08})`;
+      ctx.shadowBlur = size * 4;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    }
+  }
+
+  function drawScanlines() {
+    // 极淡扫描线
+    for (let y = 0; y < H; y += 4) {
+      ctx.fillStyle = `rgba(0,0,0,${0.015 + Math.sin(y * 0.1 + t) * 0.005})`;
+      ctx.fillRect(0, y, W, 1);
+    }
+  }
+
+  function loop() {
+    requestAnimationFrame(loop);
+    ctx.clearRect(0, 0, W, H);
+    t += 0.03;
+
+    // 随机触发故障
+    glitchTimer++;
+    if (!isGlitching && glitchTimer > 120 + Math.random() * 200) {
+      isGlitching = true;
+      glitchDuration = 6 + Math.floor(Math.random() * 12);
+      glitchTimer = 0;
+    }
+
+    drawScanlines();
+    drawEnergyWaves();
+    drawParticles();
+    drawGlitch();
+  }
+  loop();
+})();
+
+
+/* ═══════════════════════════════
+   扫描字符框层（scan-canvas）
+════════════════════════════════ */
+(function () {
+  const canvas = document.getElementById('scan-canvas');
+  const ctx = canvas.getContext('2d');
+  let W = canvas.width  = window.innerWidth;
+  let H = canvas.height = window.innerHeight;
+
+  // 扫描字符
+  const chars = '天地玄黄宇宙洪荒日月盈昃辰宿列张寒来暑往秋收冬藏';
+  const particles = [];
+  for (let i = 0; i < 60; i++) {
+    particles.push({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      char: chars[Math.floor(Math.random() * chars.length)],
+      size: 8 + Math.random() * 14,
+      alpha: 0,
+      speed: 0.3 + Math.random() * 0.8,
+      phase: Math.random() * Math.PI * 2
+    });
+  }
+
+  let t = 0;
+
+  function loop() {
+    requestAnimationFrame(loop);
+    ctx.clearRect(0, 0, W, H);
+    t += 0.02;
+
+    for (const p of particles) {
+      // 字符缓慢下落 + 透明度呼吸
+      p.alpha = 0.08 + Math.sin(t * 0.5 + p.phase) * 0.07;
+      p.y += p.speed * 0.3;
+      if (p.y > H) { p.y = -20; p.x = Math.random() * W; }
+
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, p.alpha);
+      ctx.fillStyle = Math.random() > 0.6 ? '#8b5cf6' : '#3b82f6';
+      ctx.font = `${p.size}px "Zhi Mang Xing", "Ma Shan Zheng", sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.shadowColor = 'rgba(59,130,246,0.3)';
+      ctx.shadowBlur = 10;
+      ctx.fillText(p.char, p.x, p.y);
+      ctx.restore();
+    }
+  }
+  loop();
+
+  window.addEventListener('resize', () => {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  });
+})();
+
+
+/* ═══════════════════════════════
+   扫描框 —— 动态跟踪"古月方源"标题
+════════════════════════════════ */
+(function () {
+  const frame = document.getElementById('title-scan-frame');
+  const title = document.getElementById('hero-title');
+  if (!frame || !title) return;
+
+  function positionFrame() {
+    const rect = title.getBoundingClientRect();
+    const pad = 20;
+    frame.style.left = (rect.left - pad) + 'px';
+    frame.style.top = (rect.top - pad) + 'px';
+    frame.style.width = (rect.width + pad * 2) + 'px';
+    frame.style.height = (rect.height + pad * 2) + 'px';
+  }
+
+  positionFrame();
+  window.addEventListener('resize', positionFrame);
+  window.addEventListener('scroll', positionFrame);
+
+  // 鼠标靠近时激活扫描框
+  document.addEventListener('mousemove', e => {
+    const rect = title.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const dist = Math.sqrt((e.clientX - cx) ** 2 + (e.clientY - cy) ** 2);
+    if (dist < 300) {
+      frame.classList.add('active');
+    } else {
+      frame.classList.remove('active');
+    }
   });
 })();
 
@@ -835,47 +1501,239 @@ body { cursor: crosshair; }
 (function () {
   const spans = document.querySelectorAll('#hero-sub-text span');
   spans.forEach((s, i) => {
-    s.style.transition = `opacity 0.6s ${1.8 + i * 0.12}s, transform 0.6s ${1.8 + i * 0.12}s`;
+    setTimeout(() => {
+      s.classList.add('revealed');
+    }, 1800 + i * 120);
   });
-  setTimeout(() => {
-    spans.forEach(s => {
-      s.style.opacity = '1';
-      s.style.transform = 'none';
-    });
-  }, 100);
 })();
 
 
 /* ═══════════════════════════════
-   滚动进场（IntersectionObserver）
+   淡入淡出滚动进场（IntersectionObserver）
 ════════════════════════════════ */
 (function () {
   const acts = document.querySelectorAll('.act:not(#act-hero)');
+  acts.forEach(a => a.classList.add('fade-section'));
+
   const obs = new IntersectionObserver(entries => {
     entries.forEach(e => {
       if (e.isIntersecting) {
+        e.target.classList.add('visible');
         e.target.classList.add('in-view');
         obs.unobserve(e.target);
       }
     });
-  }, { threshold: 0.18 });
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
   acts.forEach(a => obs.observe(a));
 })();
 
 
 /* ═══════════════════════════════
-   Hover 文字能量波纹
+   3D 倾斜效果（鼠标跟踪标题）
 ════════════════════════════════ */
 (function () {
-  document.querySelectorAll('.act-heading, .hero-title').forEach(el => {
-    el.addEventListener('mouseenter', () => {
-      el.style.filter = 'drop-shadow(0 0 18px rgba(34,211,238,0.4))';
-      el.style.transition = 'filter 0.4s';
+  const title = document.getElementById('hero-title');
+  if (!title) return;
+  const hero = document.getElementById('act-hero');
+
+  hero.addEventListener('mousemove', e => {
+    const rect = hero.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    const rotY = x * 12;
+    const rotX = -y * 8;
+    title.style.transform =
+      `perspective(800px) rotateX(${rotX}deg) rotateY(${rotY}deg) translateZ(20px)`;
+  });
+
+  hero.addEventListener('mouseleave', () => {
+    title.style.transform = 'perspective(800px) rotateX(0deg) rotateY(0deg) translateZ(0)';
+  });
+})();
+
+
+/* ═══════════════════════════════
+   方块翻转导航（翻页指示器）
+════════════════════════════════ */
+(function () {
+  const sections = document.querySelectorAll('.act');
+  const nav = document.createElement('div');
+  nav.className = 'flip-indicator';
+  nav.id = 'flip-nav';
+
+  const sectionIds = [];
+  sections.forEach((s, i) => {
+    sectionIds.push(s.id);
+    const dot = document.createElement('div');
+    dot.className = 'flip-dot' + (i === 0 ? ' active' : '');
+    dot.dataset.index = i;
+    dot.addEventListener('click', () => {
+      s.scrollIntoView({ behavior: 'smooth' });
     });
-    el.addEventListener('mouseleave', () => {
-      el.style.filter = '';
+    nav.appendChild(dot);
+  });
+  document.body.appendChild(nav);
+
+  // 淡入显示导航
+  setTimeout(() => { nav.style.opacity = '1'; }, 3000);
+
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const dots = nav.querySelectorAll('.flip-dot');
+        dots.forEach(d => d.classList.remove('active'));
+        const idx = sectionIds.indexOf(e.target.id);
+        if (idx >= 0 && dots[idx]) dots[idx].classList.add('active');
+      }
+    });
+  }, { threshold: 0.3 });
+  sections.forEach(s => obs.observe(s));
+})();
+
+
+/* ═══════════════════════════════
+   滚动条自定义
+════════════════════════════════ */
+(function () {
+  const style = document.createElement('style');
+  style.textContent = `
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: var(--void); }
+    ::-webkit-scrollbar-thumb { background: rgba(59,130,246,0.25); border-radius: 2px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(59,130,246,0.5); }
+  `;
+  document.head.appendChild(style);
+})();
+
+
+/* ═══════════════════════════════
+   页面加载淡入
+════════════════════════════════ */
+(function () {
+  document.body.style.opacity = '0';
+  document.body.style.transition = 'opacity 1.5s ease';
+  setTimeout(() => { document.body.style.opacity = '1'; }, 200);
+})();
+
+
+/* ═══════════════════════════════
+   鼠标悬停逐字变色 + 抖动
+════════════════════════════════ */
+(function () {
+  const chars = document.querySelectorAll('.char-glow');
+  chars.forEach((c, i) => {
+    c.addEventListener('mouseenter', () => {
+      c.style.color = '#8b5cf6';
+      c.style.transform = 'scale(1.2) translateY(-5px)';
+      c.style.transition = 'all 0.2s cubic-bezier(.22,1,.36,1)';
+      c.style.textShadow = '0 0 30px rgba(139,92,246,0.6), 0 0 60px rgba(59,130,246,0.2)';
+    });
+    c.addEventListener('mouseleave', () => {
+      c.style.color = '';
+      c.style.transform = '';
+      c.style.textShadow = '';
     });
   });
+})();
+
+
+/* ═══════════════════════════════
+   透明水玻璃 —— 鼠标跟随水波纹
+════════════════════════════════ */
+(function () {
+  const targets = document.querySelectorAll(
+    '.act-eyebrow, .act-heading, .act-body, .act-quote, .id-item'
+  );
+  if (!targets.length) return;
+
+  // 创建水波纹 canvas
+  const canvas = document.createElement('canvas');
+  canvas.id = 'ripple-canvas';
+  canvas.style.cssText =
+    'position:fixed;inset:0;z-index:999;pointer-events:none;opacity:0.4';
+  document.body.appendChild(canvas);
+  const ctx = canvas.getContext('2d');
+  let W, H;
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const ripples = [];
+
+  targets.forEach(el => {
+    el.addEventListener('mouseenter', e => {
+      const rect = el.getBoundingClientRect();
+      const cx = e.clientX;
+      const cy = rect.top + rect.height / 2;
+      for (let i = 0; i < 2; i++) {
+        ripples.push({
+          x: cx + (Math.random() - 0.5) * rect.width * 0.3,
+          y: cy + (Math.random() - 0.5) * 10,
+          r: 2,
+          life: 1,
+          maxR: 20 + Math.random() * 15,
+          speed: 0.3 + Math.random() * 0.3
+        });
+      }
+    });
+    el.addEventListener('mousemove', e => {
+      // 鼠标在文字上移动时持续产生涟漪
+      if (Math.random() < 0.15) {
+        ripples.push({
+          x: e.clientX + (Math.random() - 0.5) * 20,
+          y: e.clientY + (Math.random() - 0.5) * 8,
+          r: 1,
+          life: 1,
+          maxR: 12 + Math.random() * 10,
+          speed: 0.2 + Math.random() * 0.25
+        });
+      }
+    });
+  });
+
+  let t = 0;
+
+  function loop() {
+    requestAnimationFrame(loop);
+    ctx.clearRect(0, 0, W, H);
+    t += 0.02;
+
+    // 持续微弱呼吸波纹（无人操作时也有水感）
+    if (Math.random() < 0.02) {
+      ripples.push({
+        x: Math.random() * W,
+        y: Math.random() * H,
+        r: 1,
+        life: 1,
+        maxR: 30 + Math.random() * 40,
+        speed: 0.15 + Math.random() * 0.15
+      });
+    }
+
+    for (let i = ripples.length - 1; i >= 0; i--) {
+      const r = ripples[i];
+      r.r += r.speed;
+      r.life -= 0.018;
+      if (r.life <= 0) { ripples.splice(i, 1); continue; }
+
+      // 水波纹 —— 半透明圆环
+      ctx.beginPath();
+      ctx.arc(r.x, r.y, r.r, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(59,130,246,${r.life * 0.12})`;
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+
+      // 内圈光晕
+      ctx.beginPath();
+      ctx.arc(r.x, r.y, r.r * 0.5, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(59,130,246,${r.life * 0.04})`;
+      ctx.fill();
+    }
+  }
+  loop();
 })();
 
 
@@ -887,7 +1745,7 @@ body { cursor: crosshair; }
   let played = false;
   document.addEventListener('click', () => {
     if (!played && audio.src) {
-      audio.volume = 0.18;
+      audio.volume = 0.08;
       audio.play().catch(() => {});
       played = true;
     }
