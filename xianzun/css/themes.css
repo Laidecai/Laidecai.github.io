@@ -1,0 +1,33 @@
+/* ═══════════════════════════════
+   主题变量 — 由 theme-switcher.js 动态切换
+════════════════════════════════ */
+
+/* 银河蓝主题 (默认) */
+:root {
+  --blood: #dc2626;
+  --blood-dark: #991b1b;
+  --red-glow: #ef4444;
+  --white: #f8fafc;
+  --gray: #64748b;
+  --void: #05050e;
+  --void-light: #0c0c1a;
+  --cosmic-blue: #3b82f6;
+  --cosmic-cyan: #22d3ee;
+  --cosmic-purple: #8b5cf6;
+  --cosmic-pink: #ec4899;
+  --scan-color: rgba(59,130,246,0.4);
+}
+
+/* 血红暗黑主题 — 通过 theme-switcher.js 的 setProperty 切换 */
+[data-theme="blood"] {
+  --blood: #ef4444;
+  --blood-dark: #dc2626;
+  --red-glow: #f87171;
+  --void: #0a0505;
+  --void-light: #140808;
+  --cosmic-blue: #ef4444;
+  --cosmic-cyan: #f87171;
+  --cosmic-purple: #dc2626;
+  --cosmic-pink: #b91c1c;
+  --scan-color: rgba(239,68,68,0.4);
+}

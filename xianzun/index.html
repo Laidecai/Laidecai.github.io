@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>古月方源 · 大爱仙尊</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+QingKe+HuangYou&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=Long+Cang&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+
+<!-- 固定画布层 -->
+<canvas id="canvas3d"></canvas>
+<canvas id="trail-canvas"></canvas>
+<canvas id="click-canvas"></canvas>
+<canvas id="scan-canvas"></canvas>
+
+<audio id="ambient-audio" loop></audio>
+
+<!-- ═══════════════════════════════
+     第一幕：英雄降世
+════════════════════════════════ -->
+<section class="act" id="act-hero">
+
+  <!-- 左上角仙尊头像 -->
+  <div id="character">
+    <img src="./assets/fangyuan.png" alt="方源" />
+    <canvas id="char-glitch" class="char-glitch-canvas"></canvas>
+  </div>
+
+  <div class="act-content-3d">
+
+  <!-- 标题扫描框（JS 动态定位到"古月方源"） -->
+  <div class="scan-frame" id="title-scan-frame">
+    <div class="scan-beam"></div>
+    <span class="corner tl"></span>
+    <span class="corner tr"></span>
+    <span class="corner bl"></span>
+    <span class="corner br"></span>
+  </div>
+
+  <!-- 主标题 3D（逐字包裹） -->
+  <h1 class="hero-title" id="hero-title">
+    <span class="char-glow">古</span>
+    <span class="char-glow">月</span>
+    <span class="char-glow">方</span>
+    <span class="char-glow">源</span>
+  </h1>
+
+  <!-- 副标题逐字 -->
+  <p class="hero-sub" id="hero-sub-text">
+    <span>天</span><span>若</span><span>阻</span><span>我</span>
+    <span class="dot-sep">·</span>
+    <span>我</span><span>便</span><span>踏</span><span>碎</span><span>这</span><span>天</span>
+  </p>
+
+  <!-- 滚动指示 -->
+  <div class="scroll-hint">
+    <div class="line"></div>
+    <p>卷轴展开</p>
+  </div>
+
+  </div>
+</section>
+
+<div class="act-divider"></div>
+
+<!-- ═══════════════════════════════
+     第二幕：少年时期
+════════════════════════════════ -->
+<section class="act" id="act-youth">
+  <div class="act-content-3d">
+  <p class="act-eyebrow">第一幕 · 少年</p>
+  <h2 class="act-heading">早岁已知<em>世事艰</em></h2>
+  <p class="act-body">
+    生于山河之间，长于书卷与风雨之中。<br>
+    彼时不知天地之大，只知眼前之路须一步一步丈量。<br>
+    世间诸多艰难，皆为往后破境之基。
+  </p>
+  <blockquote class="act-quote">
+    「早岁已知世事艰，仍许飞雪满青山。」
+  </blockquote>
+  </div>
+</section>
+
+<div class="act-divider"></div>
+
+<!-- ═══════════════════════════════
+     第三幕：逆天崛起
+════════════════════════════════ -->
+<section class="act" id="act-rise">
+  <div class="act-content-3d">
+  <p class="act-eyebrow">第二幕 · 崛起</p>
+  <h2 class="act-heading">命若<em>天定</em><br>我便破天</h2>
+  <p class="act-body">
+    难，才显真本事。<br>
+    易，要我何用？<br>
+    行于黑暗，留心光明。<br>
+    身在泥潭，心向巍峨。
+  </p>
+  <blockquote class="act-quote">
+    「宿命……呵呵。千般谋划，万种牺牲，皆在此举！」
+  </blockquote>
+  </div>
+</section>
+
+<div class="act-divider"></div>
+
+<!-- ═══════════════════════════════
+     第四幕：大爱仙尊
+════════════════════════════════ -->
+<section class="act" id="act-cosmos">
+  <div class="act-content-3d">
+  <p class="act-eyebrow">第三幕 · 仙尊</p>
+  <h2 class="act-heading">诸天<em>万界</em><br>唯我独尊</h2>
+  <p class="act-body">
+    今朝暂且展羽翼，明载翱翔九重天。<br>
+    路在脚下，走便是了。<br>
+    即便头破血流，即便是凡夫俗子的无力挣扎，<br>
+    我也要争一争。
+  </p>
+  <blockquote class="act-quote">
+    「路在脚下，走便是了。」
+  </blockquote>
+  </div>
+</section>
+
+<div class="act-divider"></div>
+
+<!-- ═══════════════════════════════
+     第五幕：现实身份
+════════════════════════════════ -->
+<section class="act" id="act-self">
+  <div class="act-content-3d">
+  <p class="act-eyebrow">第四幕 · 现世修行</p>
+  <h2 class="act-heading">入世<em>修道</em><br>以技证道</h2>
+  <p class="act-body">
+    入北体圣地，修体育工程大道。<br>
+    习 AI 神术，探运动科技玄机。<br>
+    以一身所学，铸运动科技之器。<br>
+    创业为剑，破开未来之门。
+  </p>
+
+  <div class="identity-grid">
+    <div class="id-item">
+      <div class="dao">修行圣地</div>
+      <div class="name">北京体育大学</div>
+    </div>
+    <div class="id-item">
+      <div class="dao">修炼大道</div>
+      <div class="name">体育工程</div>
+    </div>
+    <div class="id-item">
+      <div class="dao">神术修习</div>
+      <div class="name">人工智能</div>
+    </div>
+    <div class="id-item">
+      <div class="dao">铸器方向</div>
+      <div class="name">运动科技</div>
+    </div>
+  </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════
+     页脚
+════════════════════════════════ -->
+<footer class="act" id="act-footer">
+  <div class="footer-inner">
+    <p>修行者 · 宿命既定，唯我逆天</p>
+    <p class="footer-links">
+      <a href="https://github.com/Laidecai" target="_blank" rel="noopener">GitHub</a>
+      &nbsp;·&nbsp;
+      <a href="mailto:599494220@qq.com" target="_blank" rel="noopener">599494220@qq.com</a>
+    </p>
+    <p class="footer-copy">
+      © 古月方源 · Laidecai.github.io
+    </p>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="./js/galaxy.js"></script>
+<script src="./js/effects.js"></script>
+<script src="./js/loader.js"></script>
+<script src="./js/audio-player.js"></script>
+<script src="./js/nav-panel.js"></script>
+<script src="./js/skills.js"></script>
+<script src="./js/theme-switcher.js"></script>
+</body>
+</html>

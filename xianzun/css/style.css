@@ -1,0 +1,684 @@
+:root {
+  --blood: #dc2626;
+  --blood-dark: #991b1b;
+  --red-glow: #ef4444;
+  --white: #f8fafc;
+  --gray: #64748b;
+  --void: #05050e;
+  --void-light: #0c0c1a;
+  --cosmic-blue: #3b82f6;
+  --cosmic-cyan: #22d3ee;
+  --cosmic-purple: #8b5cf6;
+  --cosmic-pink: #ec4899;
+  --scan-color: rgba(59,130,246,0.4);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--void);
+  color: var(--white);
+  font-family: "Zhi Mang Xing","Ma Shan Zheng","ZCOOL QingKe HuangYou",sans-serif;
+  overflow-x: hidden;
+  cursor: crosshair;
+}
+
+/* ═══ 3D 切页动画 ═══ */
+.fade-section {
+  opacity: 0;
+  transform: translateY(60px) rotateX(8deg) scale(0.96);
+  transform-origin: center top;
+  transition: opacity 1s cubic-bezier(.22,1,.36,1),
+              transform 1.2s cubic-bezier(.22,1,.36,1);
+}
+.fade-section.visible {
+  opacity: 1;
+  transform: none;
+}
+/* 逐字入场延迟 */
+.fade-section.visible .act-eyebrow { transition-delay: 0s; }
+.fade-section.visible .act-heading { transition-delay: 0.15s; }
+.fade-section.visible .act-body    { transition-delay: 0.3s; }
+.fade-section.visible .act-quote   { transition-delay: 0.45s; }
+.fade-section.visible .identity-grid { transition-delay: 0.5s; }
+
+/* ── 固定画布层 ── */
+#canvas3d {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+#trail-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+#click-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+#scan-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+}
+
+/* ── 幕次容器 ── */
+.act {
+  position: relative;
+  z-index: 10;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 80px 24px;
+  overflow: hidden;
+  /* 3D 透视场景 */
+  perspective: 1200px;
+  transform-style: preserve-3d;
+}
+/* 3D 内容容器 — 每个 act 内的包装层 */
+.act-content-3d {
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(.22,1,.36,1);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* 幕间分割——银河星带风格 */
+.act-divider {
+  position: relative;
+  z-index: 10;
+  height: 1px;
+  margin: 0 8vw;
+  background: linear-gradient(to right, transparent, rgba(59,130,246,0.2), rgba(139,92,246,0.3), rgba(59,130,246,0.2), transparent);
+  box-shadow: 0 0 20px rgba(59,130,246,0.08);
+}
+
+/* ─── 第一幕：英雄区 ─── */
+#act-hero {
+  min-height: 100vh;
+  justify-content: flex-end;
+  padding-bottom: 14vh;
+}
+
+/* ═══ 左上角仙尊头像 ═══ */
+#character {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  width: 80px;
+  height: 80px;
+  pointer-events: auto;
+  z-index: 100;
+  border-radius: 50%;
+  border: 2px solid rgba(59,130,246,0.25);
+  box-shadow: 0 0 20px rgba(59,130,246,0.1), 0 0 40px rgba(139,92,246,0.05);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.4s;
+  animation: avatar-float 4s ease-in-out infinite;
+}
+#character:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 30px rgba(59,130,246,0.25), 0 0 60px rgba(139,92,246,0.1);
+  border-color: rgba(59,130,246,0.5);
+}
+#character img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  position: relative;
+  z-index: 2;
+  mix-blend-mode: screen;
+  opacity: 0.7;
+  filter:
+    contrast(1.3)
+    brightness(1.1)
+    drop-shadow(0 0 10px rgba(59,130,246,0.15));
+  animation: none;
+}
+#character::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(59,130,246,0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+#character::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  z-index: 0;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent, rgba(59,130,246,0.15), rgba(139,92,246,0.1), transparent);
+  animation: avatar-ring 3s linear infinite;
+  pointer-events: none;
+  -webkit-mask-image: radial-gradient(ellipse at center, transparent 60%, black 61%, black 100%);
+  mask-image: radial-gradient(ellipse at center, transparent 60%, black 61%, black 100%);
+}
+@keyframes avatar-float {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+@keyframes avatar-ring {
+  to { transform: rotate(360deg); }
+}
+
+/* 人物故障覆盖层 canvas */
+.char-glitch-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.15;
+}
+
+/* 标题扫描框——只聚焦"古月方源"四个字 */
+.scan-frame {
+  position: absolute;
+  z-index: 7;
+  pointer-events: none;
+  opacity: 0;
+  animation: scan-frame-reveal 1s 1.5s forwards;
+  border: 1px solid rgba(59,130,246,0.15);
+  box-shadow: 0 0 20px rgba(59,130,246,0.05), inset 0 0 20px rgba(59,130,246,0.02);
+  transition: all 0.8s cubic-bezier(.22,1,.36,1);
+}
+.scan-frame.active {
+  border-color: rgba(59,130,246,0.3);
+  box-shadow: 0 0 30px rgba(59,130,246,0.1), inset 0 0 30px rgba(59,130,246,0.05);
+}
+.scan-frame .scan-beam {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(to right, transparent, rgba(59,130,246,0.6), rgba(139,92,246,0.6), transparent);
+  box-shadow: 0 0 15px rgba(59,130,246,0.3), 0 0 40px rgba(139,92,246,0.1);
+  animation: title-scan 2.5s ease-in-out infinite;
+}
+.scan-frame .corner {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-color: rgba(59,130,246,0.5);
+  border-style: solid;
+  border-width: 0;
+  transition: border-color 0.5s;
+}
+.scan-frame.active .corner {
+  border-color: rgba(59,130,246,0.7);
+}
+.scan-frame .corner.tl { top: -1px; left: -1px; border-top-width: 2px; border-left-width: 2px; }
+.scan-frame .corner.tr { top: -1px; right: -1px; border-top-width: 2px; border-right-width: 2px; }
+.scan-frame .corner.bl { bottom: -1px; left: -1px; border-bottom-width: 2px; border-left-width: 2px; }
+.scan-frame .corner.br { bottom: -1px; right: -1px; border-bottom-width: 2px; border-right-width: 2px; }
+@keyframes title-scan {
+  0%,100% { top: 0; opacity: 0.2; }
+  20% { opacity: 1; }
+  50% { top: 100%; opacity: 0.8; }
+  80% { opacity: 1; }
+}
+@keyframes scan-frame-reveal {
+  to { opacity: 1; }
+}
+
+/* 主标题——3D 银河字体 + 丰富动效 */
+.hero-title {
+  position: relative;
+  z-index: 9;
+  font-size: clamp(3.6rem, 10vw, 8rem);
+  font-family: "ZCOOL QingKe HuangYou","Zhi Mang Xing",sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.25em;
+  line-height: 1;
+  text-align: center;
+  color: var(--white);
+  text-shadow:
+    0 0 10px rgba(255,255,255,0.4),
+    0 0 30px rgba(59,130,246,0.2),
+    0 0 60px rgba(139,92,246,0.1),
+    2px 2px 0 #000,
+    4px 4px 0 rgba(59,130,246,0.5),
+    6px 6px 0 #000,
+    8px 8px 0 rgba(59,130,246,0.3),
+    10px 10px 0 #000,
+    12px 12px 8px rgba(0,0,0,0.6);
+  opacity: 0;
+  transform: translateY(30px) perspective(600px) rotateX(8deg);
+  animation: hero-3d-rise 2s 0.5s cubic-bezier(.22,1,.36,1) forwards;
+  transition: text-shadow 0.4s, letter-spacing 0.4s, transform 0.3s;
+}
+.hero-title:hover {
+  text-shadow:
+    0 0 20px rgba(255,255,255,0.6),
+    0 0 40px rgba(59,130,246,0.3),
+    0 0 80px rgba(139,92,246,0.15),
+    1px 1px 0 #000,
+    2px 2px 0 var(--cosmic-blue),
+    3px 3px 0 #000,
+    4px 4px 0 var(--cosmic-purple),
+    5px 5px 0 #000,
+    6px 6px 0 var(--cosmic-blue),
+    8px 8px 4px rgba(0,0,0,0.8);
+  letter-spacing: 0.32em;
+}
+@keyframes hero-3d-rise {
+  0% { opacity: 0; transform: translateY(30px) perspective(600px) rotateX(8deg); }
+  100% { opacity: 1; transform: translateY(0) perspective(600px) rotateX(0deg); }
+}
+
+/* 标题逐字增强动效 */
+.hero-title .char-glow {
+  display: inline-block;
+  animation: char-pulse 3s ease-in-out infinite;
+  transition: transform 0.3s, color 0.3s;
+}
+.hero-title .char-glow:nth-child(1) { animation-delay: 0s; }
+.hero-title .char-glow:nth-child(2) { animation-delay: 0.15s; }
+.hero-title .char-glow:nth-child(3) { animation-delay: 0.3s; }
+.hero-title .char-glow:nth-child(4) { animation-delay: 0.45s; }
+@keyframes char-pulse {
+  0%,100% { text-shadow: 0 0 10px rgba(255,255,255,0.3), 0 0 20px rgba(59,130,246,0.1); }
+  50% { text-shadow: 0 0 20px rgba(255,255,255,0.6), 0 0 40px rgba(59,130,246,0.3), 0 0 60px rgba(139,92,246,0.15); }
+}
+
+/* 标题故障 glitch 效果 */
+@keyframes glitch-text {
+  0% { transform: translate(0); }
+  20% { transform: translate(-2px, 1px) skewX(-1deg); }
+  40% { transform: translate(2px, -1px) skewX(1deg); }
+  60% { transform: translate(-1px, 2px); }
+  80% { transform: translate(1px, -2px) skewX(-0.5deg); }
+  100% { transform: translate(0); }
+}
+.hero-title.glitch {
+  animation: glitch-text 0.15s ease-in-out 3;
+}
+
+/* 副标题——逐字浮现 + 红色扫描 */
+.hero-sub {
+  position: relative;
+  z-index: 9;
+  margin-top: 28px;
+  font-size: clamp(1rem, 2.2vw, 1.4rem);
+  font-family: "Zhi Mang Xing","Ma Shan Zheng",sans-serif;
+  letter-spacing: 0.5em;
+  color: var(--white);
+  text-align: center;
+  text-shadow: 0 0 12px rgba(59,130,246,0.25), 1px 1px 0 #000;
+  overflow: hidden;
+}
+.hero-sub span {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(20px) scale(0.8);
+  transition: opacity 0.6s cubic-bezier(.22,1,.36,1), transform 0.6s cubic-bezier(.22,1,.36,1);
+}
+.hero-sub span.revealed {
+  opacity: 1;
+  transform: none;
+}
+
+/* 滚动提示 */
+.scroll-hint {
+  position: absolute;
+  bottom: 36px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  opacity: 0;
+  animation: fade-rise 2s 3s forwards;
+}
+.scroll-hint .line {
+  width: 1px;
+  height: 44px;
+  background: linear-gradient(to bottom, transparent, rgba(59,130,246,0.5));
+  animation: scroll-line 1.8s ease-in-out infinite;
+}
+.scroll-hint p {
+  font-size: 0.7rem;
+  font-family: "Ma Shan Zheng",sans-serif;
+  letter-spacing: 0.4em;
+  color: rgba(255,255,255,0.3);
+  text-shadow: 0 0 8px rgba(59,130,246,0.15);
+}
+@keyframes scroll-line {
+  0%,100% { opacity: 0.3; transform: scaleY(1); }
+  50%      { opacity: 1;   transform: scaleY(1.3); }
+}
+
+/* ─── 幕次通用 ─── */
+.act-eyebrow {
+  font-size: 0.75rem;
+  font-family: "Ma Shan Zheng","Zhi Mang Xing",sans-serif;
+  letter-spacing: 0.6em;
+  color: rgba(59,130,246,0.5);
+  margin-bottom: 22px;
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 1s, transform 1s;
+  text-shadow: 0 0 20px rgba(59,130,246,0.1);
+  position: relative;
+  overflow: hidden;
+}
+.act-eyebrow:hover {
+  transform: scale(1.08);
+  transition: transform 0.5s cubic-bezier(0.34,1.56,0.64,1);
+  letter-spacing: 0.7em;
+  color: rgba(59,130,246,0.7);
+}
+.act-eyebrow:not(:hover) {
+  transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+.act-heading {
+  font-size: clamp(2.2rem, 5.5vw, 4rem);
+  font-family: "ZCOOL QingKe HuangYou","Zhi Mang Xing",sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-align: center;
+  line-height: 1.3;
+  color: var(--white);
+  text-shadow: 0 0 8px rgba(255,255,255,0.1), 2px 2px 0 #000, 4px 4px 0 rgba(59,130,246,0.3);
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 1.2s 0.1s, transform 1.2s 0.1s, text-shadow 0.4s;
+  position: relative;
+  overflow: hidden;
+}
+.act-heading:hover {
+  text-shadow: 0 0 16px rgba(255,255,255,0.2), 0 0 40px rgba(59,130,246,0.15), 2px 2px 0 #000, 4px 4px 0 var(--cosmic-blue);
+  transform: scale(1.06) translateY(-2px);
+  transition: transform 0.5s cubic-bezier(0.34,1.56,0.64,1);
+}
+.act-heading:not(:hover) {
+  transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+.act-heading em {
+  font-style: normal;
+  color: var(--white);
+  text-shadow: 0 0 15px rgba(59,130,246,0.5), 0 0 30px rgba(139,92,246,0.2), 2px 2px 0 #000;
+  display: inline-block;
+  animation: em-glow 3s ease-in-out infinite;
+  transition: color 0.3s, text-shadow 0.3s;
+  position: relative;
+}
+.act-heading em::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(59,130,246,0.4), rgba(139,92,246,0.4), transparent);
+  transform: scaleX(0);
+  transition: transform 0.5s;
+}
+.in-view .act-heading em::after {
+  transform: scaleX(1);
+  transition-delay: 1s;
+}
+@keyframes em-glow {
+  0%,100% { text-shadow: 0 0 15px rgba(59,130,246,0.3), 0 0 30px rgba(139,92,246,0.1), 2px 2px 0 #000; color: var(--white); }
+  25% { color: #60a5fa; }
+  50% { text-shadow: 0 0 25px rgba(59,130,246,0.6), 0 0 50px rgba(139,92,246,0.3), 0 0 80px rgba(34,211,238,0.1), 2px 2px 0 #000; color: #93c5fd; }
+  75% { color: #a78bfa; }
+}
+.act-body {
+  max-width: 560px;
+  text-align: center;
+  font-size: clamp(0.9rem, 1.6vw, 1.1rem);
+  font-family: "Ma Shan Zheng","Zhi Mang Xing",sans-serif;
+  line-height: 2.2;
+  color: rgba(248,250,252,0.75);
+  margin-top: 28px;
+  letter-spacing: 0.08em;
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 1.2s 0.25s, transform 1.2s 0.25s;
+  position: relative;
+  overflow: hidden;
+}
+.act-body:hover {
+  transform: scale(1.04) translateY(-1px);
+  transition: transform 0.5s cubic-bezier(0.34,1.56,0.64,1);
+}
+.act-body:not(:hover) {
+  transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+.act-quote {
+  margin-top: 36px;
+  padding: 18px 28px;
+  border-left: 2px solid rgba(59,130,246,0.25);
+  font-size: 0.95rem;
+  font-family: "Zhi Mang Xing","Ma Shan Zheng",sans-serif;
+  color: rgba(248,250,252,0.65);
+  letter-spacing: 0.15em;
+  line-height: 2;
+  text-shadow: 0 0 12px rgba(59,130,246,0.08);
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 1.2s 0.38s, transform 1.2s 0.38s;
+  position: relative;
+  overflow: hidden;
+}
+.act-quote:hover {
+  transform: scale(1.05) translateY(-1px);
+  transition: transform 0.5s cubic-bezier(0.34,1.56,0.64,1);
+  border-left-color: rgba(59,130,246,0.5);
+  text-shadow: 0 0 20px rgba(59,130,246,0.2);
+}
+.act-quote:not(:hover) {
+  transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+
+/* 可见状态 — 不移除 transform，让 hover 能覆盖 */
+.in-view .act-eyebrow,
+.in-view .act-heading,
+.in-view .act-body,
+.in-view .act-quote {
+  opacity: 1;
+}
+.in-view .identity-grid {
+  opacity: 1;
+  transform: none;
+}
+
+/* 幕次背景色叠层——宇宙星云色调 */
+#act-youth  { background: radial-gradient(ellipse at 30% 60%, rgba(30,10,60,0.2) 0%, transparent 65%); }
+#act-rise   { background: radial-gradient(ellipse at 70% 40%, rgba(10,20,60,0.25) 0%, transparent 65%); }
+#act-cosmos { background: radial-gradient(ellipse at 50% 50%, rgba(40,10,50,0.2) 0%, transparent 65%); }
+#act-self   { background: radial-gradient(ellipse at 40% 60%, rgba(10,30,50,0.18) 0%, transparent 65%); }
+
+/* 现实身份卡 */
+.identity-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0;
+  max-width: 640px;
+  width: 100%;
+  margin-top: 48px;
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 1.2s 0.5s, transform 1.2s 0.5s;
+}
+
+.id-item {
+  padding: 22px 18px;
+  text-align: center;
+  border-top: 1px solid rgba(59,130,246,0.08);
+  transition: background 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+.id-item:hover {
+  background: rgba(59,130,246,0.04);
+  transform: scale(1.06);
+  transition: transform 0.5s cubic-bezier(0.34,1.56,0.64,1);
+}
+.id-item:not(:hover) {
+  transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+.id-item .dao { font-size: 0.7rem; font-family: "Ma Shan Zheng",sans-serif; letter-spacing: 0.4em; color: rgba(59,130,246,0.35); margin-bottom: 8px; }
+.id-item .name { font-size: 1rem; font-family: "Zhi Mang Xing","ZCOOL QingKe HuangYou",sans-serif; letter-spacing: 0.15em; color: rgba(248,250,252,0.9); text-shadow: 0 0 8px rgba(59,130,246,0.08); }
+
+/* 页脚 */
+#act-footer {
+  min-height: unset;
+  padding: 60px 24px 80px;
+  border-top: 1px solid rgba(59,130,246,0.06);
+}
+.footer-inner {
+  text-align: center;
+  font-size: 0.75rem;
+  font-family: "Ma Shan Zheng","Zhi Mang Xing",sans-serif;
+  color: rgba(100,116,139,0.6);
+  letter-spacing: 0.3em;
+  line-height: 2.5;
+}
+.footer-inner a {
+  color: rgba(59,130,246,0.4);
+  text-decoration: none;
+  transition: color 0.3s, text-shadow 0.3s;
+}
+.footer-inner a:hover { color: var(--cosmic-cyan); text-shadow: 0 0 12px rgba(34,211,238,0.3); }
+.footer-links { margin-top: 12px; }
+.footer-copy { margin-top: 24px; font-size: 0.62rem; color: rgba(71,85,105,0.4); }
+.hero-sub .dot-sep { margin: 0 0.3em; display: inline-block; }
+
+#ambient-audio { display: none; }
+
+@keyframes fade-rise {
+  to { opacity: 1; transform: none; }
+}
+
+/* 方块翻转翻页指示器 */
+.flip-indicator {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  z-index: 100;
+  display: flex;
+  gap: 8px;
+  opacity: 0.4;
+  transition: opacity 0.3s;
+}
+.flip-indicator:hover { opacity: 0.8; }
+.flip-dot {
+  width: 10px;
+  height: 10px;
+  border: 1px solid rgba(59,130,246,0.5);
+  background: transparent;
+  transform: rotate(45deg);
+  transition: background 0.3s, box-shadow 0.3s;
+  cursor: pointer;
+}
+.flip-dot.active {
+  background: var(--cosmic-blue);
+  box-shadow: 0 0 10px var(--cosmic-blue);
+}
+
+/* ═══ 透明水玻璃悬停扫光效果 ═══ */
+.act-eyebrow::after,
+.act-heading::after,
+.act-body::after,
+.act-quote::after,
+.id-item::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  z-index: -1;
+  border-radius: 4px;
+  background: linear-gradient(
+    110deg,
+    transparent 30%,
+    rgba(255,255,255,0.04) 40%,
+    rgba(255,255,255,0.08) 45%,
+    rgba(59,130,246,0.05) 50%,
+    rgba(255,255,255,0.08) 55%,
+    rgba(255,255,255,0.04) 60%,
+    transparent 70%
+  );
+  background-size: 300% 100%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s;
+}
+.act-eyebrow:hover::after,
+.act-heading:hover::after,
+.act-body:hover::after,
+.act-quote:hover::after,
+.id-item:hover::after {
+  opacity: 1;
+  animation: glass-sweep 1.2s ease-in-out forwards;
+}
+@keyframes glass-sweep {
+  0%   { background-position: 300% 0; opacity: 0; }
+  15%  { opacity: 1; }
+  85%  { opacity: 1; }
+  100% { background-position: -100% 0; opacity: 0; }
+}
+
+/* 字体淡入闪烁效果 */
+@keyframes text-flicker {
+  0%, 100% { opacity: 1; }
+  3% { opacity: 0.4; }
+  6% { opacity: 1; }
+  7% { opacity: 0.6; }
+  10% { opacity: 1; }
+  97% { opacity: 1; }
+  98% { opacity: 0.3; }
+  100% { opacity: 1; }
+}
+.hero-title {
+  animation: text-flicker 8s 3s infinite;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  #character { width: 60px; height: 60px; top: 14px; left: 14px; }
+  #theme-switcher { top: 14px; right: 14px; width: 32px; height: 32px; }
+  #audio-control { bottom: 20px; left: 14px; padding: 6px 12px; }
+  .hero-title { font-size: clamp(2.4rem, 14vw, 4rem); letter-spacing: 0.12em; }
+  .hero-sub { font-size: clamp(0.75rem, 3vw, 1rem); }
+  .act-heading { font-size: clamp(1.6rem, 6vw, 2.8rem); }
+  .act-body { max-width: 90vw; font-size: clamp(0.8rem, 2.5vw, 1rem); }
+  .act { padding: 60px 16px; }
+  .skills-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+}
+@media (max-width: 600px) {
+  #character { width: 48px; height: 48px; top: 10px; left: 10px; }
+  #theme-switcher { top: 10px; right: 10px; width: 28px; height: 28px; }
+  .hero-title { letter-spacing: 0.1em; }
+  .hero-sub { letter-spacing: 0.3em; }
+  .identity-grid { grid-template-columns: 1fr 1fr; }
+  .scan-frame { width: 85vw; }
+  .skill-item { padding: 10px 4px; }
+  .skill-canvas { width: 60px; height: 60px; }
+  .flip-indicator { bottom: 16px; right: 16px; gap: 6px; }
+  .flip-dot { width: 8px; height: 8px; }
+}
+@media (max-width: 480px) {
+  #character { width: 40px; height: 40px; top: 8px; left: 8px; }
+  .act-eyebrow { font-size: 0.6rem; letter-spacing: 0.4em; }
+  .act-quote { font-size: 0.8rem; padding: 12px 16px; }
+  .footer-inner { font-size: 0.6rem; }
+}
