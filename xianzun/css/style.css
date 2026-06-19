@@ -47,7 +47,46 @@ body {
   position: fixed;
   inset: 0;
   z-index: 1;
+  pointer-events: auto;
+  cursor: default;
+}
+
+/* 暗角（大幅削弱，避免吞掉银河） */
+#glow-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
   pointer-events: none;
+  background: radial-gradient(
+    ellipse at 50% 50%,
+    transparent 40%,
+    rgba(5,5,14,0.06) 70%,
+    rgba(5,5,14,0.15) 100%
+  );
+  mix-blend-mode: multiply;
+}
+
+/* 辉光 Bloom 模拟层（深邃宇宙氛围） */
+#bloom-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: 
+    radial-gradient(
+      ellipse at 50% 45%,
+      rgba(34,211,238,0.06) 0%,
+      rgba(139,92,246,0.04) 25%,
+      rgba(34,211,238,0.02) 45%,
+      transparent 65%
+    ),
+    radial-gradient(
+      ellipse at 80% 20%,
+      rgba(248,250,252,0.03) 0%,
+      transparent 40%
+    );
+  mix-blend-mode: screen;
+  opacity: 0.8;
 }
 #trail-canvas {
   position: fixed;
@@ -650,6 +689,24 @@ body {
 }
 .hero-title {
   animation: text-flicker 8s 3s infinite;
+  /* SVG 湍流扭曲仅在悬停时激活，避免持续性能开销 */
+  transition: filter 0.8s ease;
+}
+.hero-title:hover {
+  filter: url(#turbulence-soft);
+}
+
+/* 装饰性 SVG 动态路径包装 */
+.turbulence-svg {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+#turbulence-svg {
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.3;
 }
 
 /* 响应式 */

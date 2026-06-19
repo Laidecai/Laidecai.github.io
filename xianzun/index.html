@@ -11,8 +11,29 @@
 </head>
 <body>
 
+<!-- SVG 湍流扭曲滤镜 -->
+<svg id="turbulence-svg" class="turbulence-svg">
+  <filter id="turbulence-filter">
+    <feTurbulence type="fractalNoise" baseFrequency="0.012" numOctaves="4" result="noise" />
+    <feDisplacementMap in="SourceGraphic" in2="noise" scale="6" xChannelSelector="R" yChannelSelector="G" />
+  </filter>
+  <filter id="turbulence-soft">
+    <feTurbulence type="fractalNoise" baseFrequency="0.008" numOctaves="2" result="noise" />
+    <feDisplacementMap in="SourceGraphic" in2="noise" scale="3" xChannelSelector="R" yChannelSelector="G" />
+  </filter>
+  <!-- 装饰性动画路径（CSS d 属性动画） -->
+  <path id="morph-path" d="M 50,100 Q 150,20 250,100 T 450,100" fill="none" stroke="rgba(59,130,246,0.08)" stroke-width="1">
+    <animate attributeName="d" dur="8s" repeatCount="indefinite"
+      values="M 50,100 Q 150,20 250,100 T 450,100;
+              M 50,100 Q 150,180 250,100 T 450,100;
+              M 50,100 Q 150,20 250,100 T 450,100" />
+  </path>
+</svg>
+
 <!-- 固定画布层 -->
 <canvas id="canvas3d"></canvas>
+<div id="glow-overlay"></div>
+<div id="bloom-layer"></div>
 <canvas id="trail-canvas"></canvas>
 <canvas id="click-canvas"></canvas>
 <canvas id="scan-canvas"></canvas>

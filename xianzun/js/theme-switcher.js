@@ -44,7 +44,7 @@
   btn.addEventListener('click', () => {
     isDark = !isDark;
     if (isDark) {
-      // 血红暗黑主题
+      // 血红暗黑主题（CSS + 银河同步过渡）
       document.documentElement.style.setProperty('--blood', '#ef4444');
       document.documentElement.style.setProperty('--void', '#0a0505');
       document.documentElement.style.setProperty('--cosmic-blue', '#ef4444');
@@ -54,6 +54,8 @@
       document.documentElement.style.setProperty('--scan-color', 'rgba(239,68,68,0.4)');
       btn.style.color = 'rgba(239,68,68,0.6)';
       btn.style.borderColor = 'rgba(239,68,68,0.2)';
+      // 银河颜色过渡
+      if (window.__galaxyTheme) window.__galaxyTheme.setBlood();
     } else {
       // 恢复银河蓝
       document.documentElement.style.setProperty('--blood', '#dc2626');
@@ -65,6 +67,8 @@
       document.documentElement.style.setProperty('--scan-color', 'rgba(59,130,246,0.4)');
       btn.style.color = 'rgba(59,130,246,0.5)';
       btn.style.borderColor = 'rgba(59,130,246,0.15)';
+      // 银河颜色过渡
+      if (window.__galaxyTheme) window.__galaxyTheme.setCosmic();
     }
   });
 })();
